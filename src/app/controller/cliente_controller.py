@@ -7,8 +7,8 @@ from sqlalchemy.orm import Session
 from src.config import get_db
 from src.domain.dtos.clienteDto import ClienteRequest, ClienteResponse
 from src.domain.dtos.genericResponseDto import CreationResponse
-from src.domain.services.cliente_service import ClienteService
-from src.infrastructure.repository.createClienteRepository import ClienteRepository
+from src.domain.services.ClienteService import ClienteService
+from src.infrastructure.repository.ClienteRepository import ClienteRepository
 
 router = APIRouter(prefix="/clientes", tags=["clientes"])
 

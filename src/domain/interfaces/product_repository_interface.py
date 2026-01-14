@@ -2,7 +2,6 @@
 
 from abc import ABC, abstractmethod
 from typing import List, Optional
-from uuid import UUID
 
 from domain.entities.productsEntity import ProductEntity
 
@@ -21,11 +20,11 @@ class ProductRepositoryInterface(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def get_product(self, product_id: UUID) -> Optional[ProductEntity]:
+    def get_product(self, product_id: int) -> Optional[ProductEntity]:
         """Devuelve un producto por su ID o None si no existe."""
         raise NotImplementedError
 
     @abstractmethod
     def search_products(self, term: str) -> List[ProductEntity]:
-        """Busca productos por nombre, descripcion, codigo_barras, precio (match exacto) o estado."""
+        """Busca productos por nombre, descripcion, codigo_barras, precio_venta, costo o estado."""
         raise NotImplementedError

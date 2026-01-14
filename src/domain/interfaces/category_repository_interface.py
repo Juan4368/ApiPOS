@@ -1,8 +1,7 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from typing import List, Optional
-from uuid import UUID
 
 from domain.entities.categoryEntity import CategoryEntity
 
@@ -21,7 +20,7 @@ class CategoryRepositoryInterface(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def get_category(self, category_id: UUID) -> Optional[CategoryEntity]:
+    def get_category(self, category_id: int) -> Optional[CategoryEntity]:
         """Devuelve una categoria por su ID o None si no existe."""
         raise NotImplementedError
 

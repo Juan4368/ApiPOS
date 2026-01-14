@@ -1,5 +1,4 @@
 from typing import Annotated
-from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -33,12 +32,10 @@ def create_category(
 ) -> CreationResponse[CategoryResponse]:
     try:
         created = service.create_category(payload)
-    except Exception as exc:  # Si el dominio arroja error, lo exponemos como 400
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)
-    ) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
 
-    return CreationResponse[CategoryResponse](id=created.id, data=created)
+    return CreationResponse[CategoryResponse](id=created.categoria_id, data=created)
 
 
 @router.get("/", response_model=list[CategoryResponse])
@@ -57,7 +54,7 @@ def search_categories(q: str, service: ServiceDep) -> list[CategoryResponse]:
 
 
 @router.get("/{category_id}", response_model=CategoryResponse)
-def get_category(category_id: UUID, service: ServiceDep) -> CategoryResponse:
+def get_category(category_id: int, service: ServiceDep) -> CategoryResponse:
     categoria = service.get_category(category_id)
     if not categoria:
         raise HTTPException(

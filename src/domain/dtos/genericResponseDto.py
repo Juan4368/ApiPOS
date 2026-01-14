@@ -9,7 +9,7 @@ T = TypeVar("T")
 class CreationResponse(GenericModel, Generic[T]):
     """DTO generico para manejar las respuestas de creacion."""
 
-    id: UUID
+    id: UUID | int
     message: str = "Creacion exitosa"
     data: T
 

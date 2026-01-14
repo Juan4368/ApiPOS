@@ -7,7 +7,7 @@ import requests
 from fastapi import HTTPException, status
 
 from src.domain.dtos.clienteDto import ClienteRequest
-from src.domain.services.cliente_service import ClienteService
+from src.domain.services.ClienteService import ClienteService
 from src.infrastructure.repository.whatsappClientRepository import WhatsAppClient
 
 

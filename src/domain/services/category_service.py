@@ -1,15 +1,16 @@
-﻿from __future__ import annotations
+from __future__ import annotations
+
 from typing import List, Optional
-from uuid import UUID
 
 from domain.dtos.categoryDto import CategoryRequest, CategoryResponse
 from domain.entities.categoryEntity import CategoryEntity
 from domain.interfaces.category_repository_interface import (
     CategoryRepositoryInterface,
 )
+from domain.interfaces.ICategoryService import ICategoryService
 
 
-class CategoryService:
+class CategoryService(ICategoryService):
     """Caso de uso para operaciones de categorias."""
 
     def __init__(self, repository: CategoryRepositoryInterface):
@@ -20,6 +21,10 @@ class CategoryService:
             nombre=data.nombre,
             descripcion=data.descripcion,
             estado=data.estado,
+            creado_por_id=data.creado_por_id,
+            actualizado_por_id=data.actualizado_por_id,
+            fecha_creacion=data.fecha_creacion,
+            fecha_actualizacion=data.fecha_actualizacion,
         )
         created = self.repository.create_category(entity)
         return CategoryResponse.model_validate(created)
@@ -28,7 +33,7 @@ class CategoryService:
         categorias = self.repository.list_categories()
         return [CategoryResponse.model_validate(cat) for cat in categorias]
 
-    def get_category(self, category_id: UUID) -> Optional[CategoryResponse]:
+    def get_category(self, category_id: int) -> Optional[CategoryResponse]:
         categoria = self.repository.get_category(category_id)
         if not categoria:
             return None

@@ -1,5 +1,4 @@
 from typing import Annotated
-from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -38,7 +37,7 @@ def create_product(
             status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)
         ) from exc
 
-    return CreationResponse[ProductResponse](id=created.id, data=created)
+    return CreationResponse[ProductResponse](id=created.producto_id, data=created)
 
 
 @router.get("/", response_model=list[ProductResponse])
@@ -57,7 +56,7 @@ def search_products(q: str, service: ServiceDep) -> list[ProductResponse]:
 
 
 @router.get("/{product_id}", response_model=ProductResponse)
-def get_product(product_id: UUID, service: ServiceDep) -> ProductResponse:
+def get_product(product_id: int, service: ServiceDep) -> ProductResponse:
     producto = service.get_product(product_id)
     if not producto:
         raise HTTPException(

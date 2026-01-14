@@ -1,32 +1,36 @@
 from __future__ import annotations
-from decimal import Decimal
-from typing import Optional, Any
-import uuid
-from uuid import UUID
 
-from pydantic import BaseModel, Field, field_validator, ConfigDict
+from datetime import datetime
+from decimal import Decimal
+from typing import Any, Optional
+
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class ProductEntity(BaseModel):
     """
-    Entidad de dominio Pydantic v2 para la tabla `products`.
+    Entidad de dominio Pydantic v2 para la tabla `product`.
     Configurada con `from_attributes=True` para aceptar objetos ORM o con atributos.
     """
-    id: UUID = Field(default_factory=uuid.uuid4)
+
+    producto_id: Optional[int] = None
+    codigo_barras: str = Field(..., min_length=1)
     nombre: str = Field(..., min_length=1)
+    categoria_id: Optional[int] = None
     descripcion: Optional[str] = None
-    precio: Decimal = Field(default=Decimal("0.00"), ge=Decimal("0.00"))
-    codigo_barras: Optional[str] = None
-    stock_actual: int = Field(default=0, ge=0)
-    categoria_id: UUID = Field(default_factory=uuid.uuid4)
-    imagen_url: Optional[str] = None
+    precio_venta: Decimal = Field(default=Decimal("0.00"), ge=Decimal("0.00"))
+    costo: Decimal = Field(default=Decimal("0.00"), ge=Decimal("0.00"))
+    creado_por_id: Optional[int] = None
+    actualizado_por_id: Optional[int] = None
+    fecha_creacion: Optional[datetime] = None
+    fecha_actualizacion: Optional[datetime] = None
     estado: bool = True
 
-    # Configuración para Pydantic v2
+    # Configuracion para Pydantic v2
     model_config = ConfigDict(
-        from_attributes=True,        # Permite usar objetos con atributos (ORM)
-        validate_assignment=True,    # Valida al asignar valores
-        json_encoders={Decimal: lambda v: str(v), UUID: lambda v: str(v)},
+        from_attributes=True,
+        validate_assignment=True,
+        json_encoders={Decimal: lambda v: str(v)},
     )
 
     # Validadores
@@ -34,7 +38,7 @@ class ProductEntity(BaseModel):
     def _strip_nombre(cls, v: Optional[str]) -> str:
         return (v or "").strip()
 
-    @field_validator("precio", mode="before")
+    @field_validator("precio_venta", "costo", mode="before")
     def _ensure_decimal(cls, v) -> Decimal:
         if isinstance(v, Decimal):
             val = v
@@ -44,34 +48,11 @@ class ProductEntity(BaseModel):
             raise ValueError("El precio no puede ser negativo")
         return val
 
-    @field_validator("stock_actual", mode="before")
-    def _ensure_int_stock(cls, v) -> int:
-        if v is None:
-            return 0
-        return int(v)
-
     @field_validator("categoria_id", mode="before")
-    def _ensure_uuid_categoria(cls, v) -> UUID:
+    def _ensure_int_categoria(cls, v) -> Optional[int]:
         if v is None:
-            raise ValueError("El campo categoria_id es requerido")
-        if isinstance(v, UUID):
-            return v
-        return UUID(str(v))
-
-    # Lógica de negocio
-    def increase_stock(self, qty: int) -> None:
-        qty = int(qty)
-        if qty <= 0:
-            raise ValueError("La cantidad debe ser mayor que 0")
-        self.stock_actual += qty
-
-    def decrease_stock(self, qty: int) -> None:
-        qty = int(qty)
-        if qty <= 0:
-            raise ValueError("La cantidad debe ser mayor que 0")
-        if qty > self.stock_actual:
-            raise ValueError("Stock insuficiente")
-        self.stock_actual -= qty
+            return None
+        return int(v)
 
     def is_active(self) -> bool:
         return bool(self.estado)

@@ -16,19 +16,11 @@ for path in (PROJECT_ROOT, SRC_DIR):
     if str(path) not in sys.path:
         sys.path.append(str(path))
 
-from src.app.controller.contabilidad_categoria_controller import (
-    router as contabilidad_categoria_router,
-)
-from src.app.controller.cierre_caja_controller import router as cierre_caja_router
-from src.app.controller.egreso_controller import router as egreso_router
-from src.app.controller.ingreso_controller import router as ingreso_router
+from src.app.controller.category_controller import router as category_router
 from src.app.controller.product_controller import router as product_router
-from src.app.controller.cliente_controller import router as cliente_router
-from src.app.controller.proveedor_controller import router as proveedor_router
-from src.app.controller.resumen_venta_diaria_controller import (
-    router as resumen_venta_diaria_router,
-)
-from src.app.controller.webhook_controller import router as webhook_router
+from src.app.controller.stock_controller import router as stock_router
+from src.app.controller.user_controller import router as user_router
+from src.app.controller.venta_controller import router as venta_router
 
 DOCS_URL = "http://127.0.0.1:8000/docs"
 BROWSER_CANDIDATES = [
@@ -65,15 +57,11 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
+    app.include_router(category_router)
     app.include_router(product_router)
-    app.include_router(webhook_router)
-    app.include_router(contabilidad_categoria_router)
-    app.include_router(ingreso_router)
-    app.include_router(egreso_router)
-    app.include_router(resumen_venta_diaria_router)
-    app.include_router(cierre_caja_router)
-    app.include_router(cliente_router)
-    app.include_router(proveedor_router)
+    app.include_router(stock_router)
+    app.include_router(user_router)
+    app.include_router(venta_router)
 
     @app.get("/")
     def root():
