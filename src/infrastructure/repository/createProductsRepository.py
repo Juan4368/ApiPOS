@@ -189,10 +189,11 @@ class ProductRepository(ProductRepositoryInterface):
         skipped = 0
         for entity in products:
             code = entity.codigo_barras
-            if not code or code in existing_codes or code in seen:
+            if code and (code in existing_codes or code in seen):
                 skipped += 1
                 continue
-            seen.add(code)
+            if code:
+                seen.add(code)
 
             fecha_creacion = entity.fecha_creacion or datetime.now(timezone.utc)
             fecha_actualizacion = entity.fecha_actualizacion or fecha_creacion

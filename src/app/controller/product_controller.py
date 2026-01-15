@@ -1,5 +1,6 @@
 from io import BytesIO
 from typing import Annotated
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 
 from openpyxl import load_workbook
 from pydantic import ValidationError
@@ -121,6 +122,7 @@ async def import_products(
 
     items: list[ProductRequest] = []
     errors: list[ProductImportError] = []
+    max_price = Decimal("99999999.99")
     for row_index, row in enumerate(
         sheet.iter_rows(min_row=2, values_only=True), start=2
     ):
@@ -135,6 +137,56 @@ async def import_products(
                     value = None
             payload[field_name] = value
 
+        def _add_numeric_error(field_name: str, msg: str, value: object) -> None:
+            errors.append(
+                ProductImportError(
+                    row=row_index,
+                    message=str(
+                        [
+                            {
+                                "type": "value_error",
+                                "loc": (field_name,),
+                                "msg": msg,
+                                "input": value,
+                            }
+                        ]
+                    ),
+                )
+            )
+
+        invalid_numeric = False
+        for field_name in ("precio_venta", "costo", "margen"):
+            raw_value = payload.get(field_name)
+            if raw_value is None:
+                continue
+            try:
+                value = Decimal(str(raw_value))
+            except (InvalidOperation, ValueError):
+                _add_numeric_error(field_name, "El precio debe ser un numero valido", raw_value)
+                invalid_numeric = True
+                break
+            if value.is_nan() or value.is_infinite():
+                _add_numeric_error(field_name, "El precio debe ser un numero valido", raw_value)
+                invalid_numeric = True
+                break
+            try:
+                value = value.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+            except (InvalidOperation, ValueError):
+                _add_numeric_error(field_name, "El precio debe tener un formato valido", raw_value)
+                invalid_numeric = True
+                break
+            if value < 0:
+                _add_numeric_error(field_name, "El precio no puede ser negativo", raw_value)
+                invalid_numeric = True
+                break
+            if value > max_price:
+                _add_numeric_error(field_name, "El precio excede el maximo permitido", raw_value)
+                invalid_numeric = True
+                break
+
+        if invalid_numeric:
+            continue
+
         try:
             items.append(ProductRequest(**payload))
         except ValidationError as exc:
@@ -145,6 +197,7 @@ async def import_products(
     created, skipped = service.import_products(items)
     return ProductImportResponse(
         created=created,
+        importados=created,
         skipped=skipped,
         invalid=len(errors),
         errors=errors,

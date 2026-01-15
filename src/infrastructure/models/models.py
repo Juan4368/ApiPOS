@@ -187,7 +187,7 @@ class Product(Base):
     )
 
     producto_id: Mapped[int] = mapped_column(Integer, Identity(start=1, increment=1, minvalue=1, maxvalue=2147483647, cycle=False, cache=1), primary_key=True)
-    codigo_barras: Mapped[str] = mapped_column(String(64), nullable=False)
+    codigo_barras: Mapped[Optional[str]] = mapped_column(String(250), nullable=True)
     nombre: Mapped[str] = mapped_column(String(255), nullable=False)
     precio_venta: Mapped[decimal.Decimal] = mapped_column(Numeric(10, 2), nullable=False)
     costo: Mapped[decimal.Decimal] = mapped_column(Numeric(10, 2), nullable=False)
