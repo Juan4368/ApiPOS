@@ -2,7 +2,12 @@ from __future__ import annotations
 
 from typing import List, Optional
 
-from domain.dtos.userDto import UserRequest, UserResponse
+from domain.dtos.userDto import (
+    UserRequest,
+    UserResponse,
+    UserStatusRequest,
+    UserUpdateRequest,
+)
 from domain.entities.userEntity import UserEntity
 from domain.interfaces.IUserService import IUserService
 from domain.interfaces.user_repository_interface import UserRepositoryInterface
@@ -21,6 +26,7 @@ class UserService(IUserService):
             role=data.role,
             activo=data.activo,
             nombre_completo=data.nombre_completo,
+            numero_contacto=data.numero_contacto,
             creado_at=data.creado_at,
             actualizado_at=data.actualizado_at,
         )
@@ -40,3 +46,26 @@ class UserService(IUserService):
     def search_users(self, term: str) -> List[UserResponse]:
         users = self.repository.search_users(term)
         return [UserResponse.model_validate(user) for user in users]
+
+    def update_user_status(
+        self, user_id: int, data: UserStatusRequest
+    ) -> Optional[UserResponse]:
+        updated = self.repository.update_user_status(user_id, data.activo, data.actualizado_at)
+        if not updated:
+            return None
+        return UserResponse.model_validate(updated)
+
+    def update_user(self, user_id: int, data: UserUpdateRequest) -> Optional[UserResponse]:
+        updated = self.repository.update_user(
+            user_id=user_id,
+            correo=data.correo,
+            contrasena_hash=data.contrasena_hash,
+            role=data.role,
+            activo=data.activo,
+            nombre_completo=data.nombre_completo,
+            numero_contacto=data.numero_contacto,
+            actualizado_at=data.actualizado_at,
+        )
+        if not updated:
+            return None
+        return UserResponse.model_validate(updated)

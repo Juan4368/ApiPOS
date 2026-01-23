@@ -19,6 +19,7 @@ class UserEntity(BaseModel):
     creado_at: Optional[datetime] = None
     actualizado_at: Optional[datetime] = None
     nombre_completo: Optional[str] = None
+    numero_contacto: Optional[str] = None
 
     model_config = ConfigDict(
         from_attributes=True,
@@ -34,6 +35,13 @@ class UserEntity(BaseModel):
 
     @field_validator("nombre_completo", mode="before")
     def _strip_nombre(cls, v: Optional[str]) -> Optional[str]:
+        if v is None:
+            return None
+        value = str(v).strip()
+        return value or None
+
+    @field_validator("numero_contacto", mode="before")
+    def _strip_contacto(cls, v: Optional[str]) -> Optional[str]:
         if v is None:
             return None
         value = str(v).strip()

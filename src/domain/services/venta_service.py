@@ -47,6 +47,8 @@ class VentaService(IVentaService):
             total=total,
             tipo_pago=data.tipo_pago,
             estado=data.estado,
+            nota_venta=data.nota_venta,
+            cliente_id=data.cliente_id,
             user_id=data.user_id,
         )
         created = self.repository.create_venta(venta_entity, detalles)

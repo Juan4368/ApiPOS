@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from datetime import datetime
 from typing import List, Optional
 
 from domain.entities.userEntity import UserEntity
@@ -27,4 +28,26 @@ class UserRepositoryInterface(ABC):
     @abstractmethod
     def search_users(self, term: str) -> List[UserEntity]:
         """Busca usuarios por correo, nombre, rol o estado."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def update_user_status(
+        self, user_id: int, activo: bool, actualizado_at: Optional[datetime] = None
+    ) -> Optional[UserEntity]:
+        """Actualiza el estado activo del usuario y devuelve la entidad actualizada."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def update_user(
+        self,
+        user_id: int,
+        correo: Optional[str] = None,
+        contrasena_hash: Optional[str] = None,
+        role: Optional[str] = None,
+        activo: Optional[bool] = None,
+        nombre_completo: Optional[str] = None,
+        numero_contacto: Optional[str] = None,
+        actualizado_at: Optional[datetime] = None,
+    ) -> Optional[UserEntity]:
+        """Actualiza datos del usuario y devuelve la entidad actualizada."""
         raise NotImplementedError

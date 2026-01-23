@@ -16,6 +16,7 @@ class UserRequest(BaseModel):
     role: str = Field(..., min_length=1)
     activo: bool = True
     nombre_completo: Optional[str] = Field(None, max_length=150)
+    numero_contacto: Optional[str] = Field(None, max_length=50)
     creado_at: Optional[datetime] = None
     actualizado_at: Optional[datetime] = None
 
@@ -30,7 +31,31 @@ class UserResponse(BaseModel):
     role: str
     activo: bool
     nombre_completo: Optional[str]
+    numero_contacto: Optional[str]
     creado_at: Optional[datetime]
     actualizado_at: Optional[datetime]
 
     model_config = {"from_attributes": True}
+
+
+class UserStatusRequest(BaseModel):
+    """
+    DTO para actualizar el estado del usuario.
+    """
+
+    activo: bool
+    actualizado_at: Optional[datetime] = None
+
+
+class UserUpdateRequest(BaseModel):
+    """
+    DTO para actualizar datos del usuario.
+    """
+
+    correo: Optional[str] = Field(None, min_length=1, max_length=255)
+    contrasena_hash: Optional[str] = Field(None, min_length=1, max_length=255)
+    role: Optional[str] = Field(None, min_length=1)
+    activo: Optional[bool] = None
+    nombre_completo: Optional[str] = Field(None, max_length=150)
+    numero_contacto: Optional[str] = Field(None, max_length=50)
+    actualizado_at: Optional[datetime] = None

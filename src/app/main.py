@@ -17,6 +17,7 @@ for path in (PROJECT_ROOT, SRC_DIR):
         sys.path.append(str(path))
 
 from src.app.controller.category_controller import router as category_router
+from src.app.controller.cliente_controller import router as cliente_router
 from src.app.controller.product_controller import router as product_router
 from src.app.controller.stock_controller import router as stock_router
 from src.app.controller.user_controller import router as user_router
@@ -58,6 +59,7 @@ def create_app() -> FastAPI:
 )
 
     app.include_router(category_router)
+    app.include_router(cliente_router)
     app.include_router(product_router)
     app.include_router(stock_router)
     app.include_router(user_router)

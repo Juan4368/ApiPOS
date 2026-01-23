@@ -30,6 +30,8 @@ class VentaRepository(VentaRepositoryInterface):
             total=venta_entity.total,
             tipo_pago=venta_entity.tipo_pago,
             estado=venta_entity.estado,
+            nota_venta=venta_entity.nota_venta,
+            cliente_id=venta_entity.cliente_id,
             user_id=venta_entity.user_id,
         )
         self.db.add(venta_orm)

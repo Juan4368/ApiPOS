@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from decimal import Decimal
 from typing import Optional
+from uuid import UUID
 
 from pydantic import BaseModel, Field
 
@@ -18,6 +19,8 @@ class VentaRequest(BaseModel):
     tipo_pago: str = Field(..., min_length=1)
     user_id: Optional[int] = None
     estado: bool = True
+    nota_venta: Optional[str] = None
+    cliente_id: Optional[UUID] = None
     impuesto: Decimal = Field(default=Decimal("0.00"), ge=Decimal("0.00"))
     descuento: Decimal = Field(default=Decimal("0.00"), ge=Decimal("0.00"))
     fecha: Optional[datetime] = None
@@ -44,6 +47,8 @@ class VentaResponse(BaseModel):
     total: Decimal
     tipo_pago: str
     estado: bool
+    nota_venta: Optional[str]
+    cliente_id: Optional[UUID]
     user_id: Optional[int]
     detalles: list[VentaDetalleResponse] = Field(default_factory=list)
 

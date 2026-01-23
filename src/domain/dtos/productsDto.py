@@ -17,6 +17,7 @@ class ProductRequest(BaseModel):
     precio_venta: Decimal = Field(..., ge=Decimal("0.00"))
     costo: Decimal = Field(..., ge=Decimal("0.00"))
     margen: Optional[Decimal] = Field(None, ge=Decimal("0.00"))
+    iva: Decimal = Field(default=Decimal("0.00"), ge=Decimal("0.00"))
     creado_por_id: Optional[int] = None
     actualizado_por_id: Optional[int] = None
     fecha_creacion: Optional[datetime] = None
@@ -42,20 +43,22 @@ class ProductRequest(BaseModel):
         if v is None:
             return None
         if isinstance(v, int):
-            return v
+            return v or None
         if isinstance(v, str):
             value = v.strip()
             if value == "":
                 return None
             if value.isdigit():
-                return int(value)
+                parsed = int(value)
+                return parsed or None
             return None
         try:
-            return int(v)
+            parsed = int(v)
+            return parsed or None
         except (TypeError, ValueError):
             return None
 
-    @field_validator("precio_venta", "costo", mode="before")
+    @field_validator("precio_venta", "costo", "iva", mode="before")
     def _ensure_decimal_price(cls, v: Any) -> Decimal:
         if isinstance(v, Decimal):
             value = v
@@ -128,13 +131,14 @@ class ProductResponse(BaseModel):
     DTO para manejar las respuestas relacionadas con productos.
     """
     producto_id: int
-    codigo_barras: str
+    codigo_barras: Optional[str] = None
     nombre: str
     categoria_id: Optional[int]
     descripcion: Optional[str]
     precio_venta: Decimal
     costo: Decimal
     margen: Optional[Decimal] = None
+    iva: Decimal
     creado_por_id: Optional[int]
     actualizado_por_id: Optional[int]
     fecha_creacion: Optional[datetime]
@@ -143,6 +147,13 @@ class ProductResponse(BaseModel):
     categoria_nombre: Optional[str] = None
     creado_por_nombre: Optional[str] = None
     actualizado_por_nombre: Optional[str] = None
+
+    @field_validator("codigo_barras", mode="before")
+    def _normalize_codigo_barras(cls, v: Any) -> Optional[str]:
+        if v is None:
+            return None
+        value = str(v).strip()
+        return value or None
 
     class Config:
         from_attributes = True  # Permite construir desde objetos con atributos (ORM, entidades, etc.)

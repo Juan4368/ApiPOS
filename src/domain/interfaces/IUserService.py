@@ -3,7 +3,12 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import List, Optional
 
-from domain.dtos.userDto import UserRequest, UserResponse
+from domain.dtos.userDto import (
+    UserRequest,
+    UserResponse,
+    UserStatusRequest,
+    UserUpdateRequest,
+)
 
 
 class IUserService(ABC):
@@ -21,4 +26,12 @@ class IUserService(ABC):
 
     @abstractmethod
     def search_users(self, term: str) -> List[UserResponse]:
+        ...
+
+    @abstractmethod
+    def update_user_status(self, user_id: int, data: UserStatusRequest) -> Optional[UserResponse]:
+        ...
+
+    @abstractmethod
+    def update_user(self, user_id: int, data: UserUpdateRequest) -> Optional[UserResponse]:
         ...

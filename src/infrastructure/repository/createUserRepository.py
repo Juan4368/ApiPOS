@@ -29,6 +29,7 @@ class UserRepository(UserRepositoryInterface):
             creado_at=creado_at,
             actualizado_at=actualizado_at,
             nombre_completo=user_entity.nombre_completo,
+            numero_contacto=user_entity.numero_contacto,
         )
 
         self.db.add(user_orm)
@@ -64,3 +65,48 @@ class UserRepository(UserRepositoryInterface):
 
         records = self.db.query(User).filter(or_(*filters)).all()
         return [UserEntity.from_model(row) for row in records]
+
+    def update_user_status(
+        self, user_id: int, activo: bool, actualizado_at: Optional[datetime] = None
+    ) -> Optional[UserEntity]:
+        record = self.db.get(User, user_id)
+        if not record:
+            return None
+        record.activo = activo
+        record.actualizado_at = actualizado_at or datetime.now(timezone.utc)
+        self.db.commit()
+        self.db.refresh(record)
+        return UserEntity.from_model(record)
+
+    def update_user(
+        self,
+        user_id: int,
+        correo: Optional[str] = None,
+        contrasena_hash: Optional[str] = None,
+        role: Optional[str] = None,
+        activo: Optional[bool] = None,
+        nombre_completo: Optional[str] = None,
+        numero_contacto: Optional[str] = None,
+        actualizado_at: Optional[datetime] = None,
+    ) -> Optional[UserEntity]:
+        record = self.db.get(User, user_id)
+        if not record:
+            return None
+
+        if correo is not None:
+            record.correo = correo
+        if contrasena_hash is not None:
+            record.contrasena_hash = contrasena_hash
+        if role is not None:
+            record.role = role
+        if activo is not None:
+            record.activo = activo
+        if nombre_completo is not None:
+            record.nombre_completo = nombre_completo
+        if numero_contacto is not None:
+            record.numero_contacto = numero_contacto
+
+        record.actualizado_at = actualizado_at or datetime.now(timezone.utc)
+        self.db.commit()
+        self.db.refresh(record)
+        return UserEntity.from_model(record)

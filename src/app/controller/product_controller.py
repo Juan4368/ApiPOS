@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 
 from src.config import get_db
-from src.domain.dtos.genericResponseDto import CreationResponse
+from src.domain.dtos.genericResponseDto import CreationResponse, MessageResponse
 from src.domain.dtos.productsDto import (
     ProductRequest,
     ProductResponse,
@@ -75,6 +75,17 @@ def get_product(product_id: int, service: ServiceDep) -> ProductResponse:
             detail="Producto no encontrado",
         )
     return producto
+
+
+@router.delete("/{product_id}", response_model=MessageResponse)
+def delete_product(product_id: int, service: ServiceDep) -> MessageResponse:
+    deleted = service.delete_product(product_id)
+    if not deleted:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Producto no encontrado",
+        )
+    return MessageResponse(message="Producto eliminado")
 
 
 @router.post("/import", response_model=ProductImportResponse)
@@ -155,7 +166,7 @@ async def import_products(
             )
 
         invalid_numeric = False
-        for field_name in ("precio_venta", "costo", "margen"):
+        for field_name in ("precio_venta", "costo", "margen", "iva"):
             raw_value = payload.get(field_name)
             if raw_value is None:
                 continue

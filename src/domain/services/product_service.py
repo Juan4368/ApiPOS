@@ -28,6 +28,7 @@ class ProductService:
             precio_venta=data.precio_venta,
             costo=data.costo,
             margen=data.margen,
+            iva=data.iva,
             creado_por_id=data.creado_por_id,
             actualizado_por_id=data.actualizado_por_id,
             fecha_creacion=data.fecha_creacion,
@@ -62,6 +63,7 @@ class ProductService:
             precio_venta=data.precio_venta,
             costo=data.costo,
             margen=data.margen,
+            iva=data.iva,
             creado_por_id=data.creado_por_id,
             actualizado_por_id=data.actualizado_por_id,
             fecha_creacion=data.fecha_creacion,
@@ -86,6 +88,9 @@ class ProductService:
             return None
         return ProductResponse.model_validate(updated)
 
+    def delete_product(self, product_id: int) -> bool:
+        return self.repository.delete_product(product_id)
+
     def import_products(self, items: List[ProductRequest]) -> tuple[int, int]:
         entities = [
             ProductEntity(
@@ -96,6 +101,7 @@ class ProductService:
                 precio_venta=item.precio_venta,
                 costo=item.costo,
                 margen=item.margen,
+                iva=item.iva,
                 creado_por_id=item.creado_por_id,
                 actualizado_por_id=item.actualizado_por_id,
                 fecha_creacion=item.fecha_creacion,

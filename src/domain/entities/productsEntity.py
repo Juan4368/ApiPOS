@@ -21,6 +21,7 @@ class ProductEntity(BaseModel):
     precio_venta: Decimal = Field(default=Decimal("0.00"), ge=Decimal("0.00"))
     costo: Decimal = Field(default=Decimal("0.00"), ge=Decimal("0.00"))
     margen: Optional[Decimal] = None
+    iva: Decimal = Field(default=Decimal("0.00"), ge=Decimal("0.00"))
     creado_por_id: Optional[int] = None
     actualizado_por_id: Optional[int] = None
     fecha_creacion: Optional[datetime] = None
@@ -50,7 +51,7 @@ class ProductEntity(BaseModel):
         value = str(v).strip()
         return value or None
 
-    @field_validator("precio_venta", "costo", mode="before")
+    @field_validator("precio_venta", "costo", "iva", mode="before")
     def _ensure_decimal(cls, v) -> Decimal:
         if isinstance(v, Decimal):
             val = v
@@ -99,16 +100,18 @@ class ProductEntity(BaseModel):
         if v is None:
             return None
         if isinstance(v, int):
-            return v
+            return v or None
         if isinstance(v, str):
             value = v.strip()
             if value == "":
                 return None
             if value.isdigit():
-                return int(value)
+                parsed = int(value)
+                return parsed or None
             return None
         try:
-            return int(v)
+            parsed = int(v)
+            return parsed or None
         except (TypeError, ValueError):
             return None
 

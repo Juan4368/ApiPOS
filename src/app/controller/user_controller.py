@@ -5,7 +5,12 @@ from sqlalchemy.orm import Session
 
 from src.config import get_db
 from src.domain.dtos.genericResponseDto import CreationResponse
-from src.domain.dtos.userDto import UserRequest, UserResponse
+from src.domain.dtos.userDto import (
+    UserRequest,
+    UserResponse,
+    UserStatusRequest,
+    UserUpdateRequest,
+)
 from src.domain.services.user_service import UserService
 from src.infrastructure.repository.createUserRepository import UserRepository
 
@@ -56,6 +61,36 @@ def search_users(q: str, service: ServiceDep) -> list[UserResponse]:
 @router.get("/{user_id}", response_model=UserResponse)
 def get_user(user_id: int, service: ServiceDep) -> UserResponse:
     user = service.get_user(user_id)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Usuario no encontrado",
+        )
+    return user
+
+
+@router.patch("/{user_id}/estado", response_model=UserResponse)
+def update_user_status(
+    user_id: int,
+    payload: UserStatusRequest,
+    service: ServiceDep,
+) -> UserResponse:
+    user = service.update_user_status(user_id, payload)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Usuario no encontrado",
+        )
+    return user
+
+
+@router.put("/{user_id}", response_model=UserResponse)
+def update_user(
+    user_id: int,
+    payload: UserUpdateRequest,
+    service: ServiceDep,
+) -> UserResponse:
+    user = service.update_user(user_id, payload)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

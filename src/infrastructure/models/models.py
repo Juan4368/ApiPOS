@@ -1,6 +1,7 @@
 from typing import Optional
 import datetime
 import decimal
+import uuid
 
 from sqlalchemy import Boolean, CheckConstraint, DateTime, Enum, ForeignKeyConstraint, Identity, Index, Integer, Numeric, PrimaryKeyConstraint, String, Text, UniqueConstraint, Uuid
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
@@ -75,6 +76,7 @@ class User(Base):
     creado_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False)
     actualizado_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False)
     nombre_completo: Mapped[Optional[str]] = mapped_column(String(150))
+    numero_contacto: Mapped[Optional[str]] = mapped_column(String(50))
 
     categoria: Mapped[list['Categoria']] = relationship('Categoria', foreign_keys='[Categoria.actualizado_por_id]', back_populates='actualizado_por')
     categoria_: Mapped[list['Categoria']] = relationship('Categoria', foreign_keys='[Categoria.creado_por_id]', back_populates='creado_por')
@@ -84,6 +86,22 @@ class User(Base):
     stock_: Mapped[list['Stock']] = relationship('Stock', foreign_keys='[Stock.creado_por_id]', back_populates='creado_por')
     movimientos_stock: Mapped[list['MovimientosStock']] = relationship('MovimientosStock', back_populates='realizado_por')
     ventas: Mapped[list['Venta']] = relationship('Venta', back_populates='usuario')
+
+
+class Cliente(Base):
+    __tablename__ = 'clientes'
+    __table_args__ = (
+        PrimaryKeyConstraint('id', name='clientes_pkey'),
+        Index('ix_clientes_id', 'id'),
+        Index('ix_clientes_nombre_normalizado', 'nombre_normalizado')
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    nombre: Mapped[str] = mapped_column(String(255), nullable=False)
+    nombre_normalizado: Mapped[str] = mapped_column(String(255), nullable=False)
+    telefono: Mapped[Optional[str]] = mapped_column(String(100))
+    email: Mapped[Optional[str]] = mapped_column(String(255))
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False, default=datetime.datetime.utcnow)
 
 
 class Cartera(Base):
@@ -192,6 +210,7 @@ class Product(Base):
     precio_venta: Mapped[decimal.Decimal] = mapped_column(Numeric(10, 2), nullable=False)
     costo: Mapped[decimal.Decimal] = mapped_column(Numeric(10, 2), nullable=False)
     margen: Mapped[Optional[decimal.Decimal]] = mapped_column(Numeric(10, 2))
+    iva: Mapped[decimal.Decimal] = mapped_column(Numeric(10, 2), nullable=False)
     fecha_creacion: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False)
     fecha_actualizacion: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False)
     estado: Mapped[bool] = mapped_column(Boolean, nullable=False)
@@ -212,6 +231,7 @@ class Venta(Base):
     __tablename__ = 'venta'
     __table_args__ = (
         CheckConstraint('total >= 0::numeric', name='ck_venta_total_no_negativo'),
+        ForeignKeyConstraint(['cliente_id'], ['clientes.id'], ondelete='SET NULL', name='venta_cliente_id_fkey'),
         ForeignKeyConstraint(['user_id'], ['user.user_id'], ondelete='SET NULL', name='venta_user_id_fkey'),
         PrimaryKeyConstraint('venta_id', name='venta_pkey'),
         Index('ix_venta_fecha', 'fecha'),
@@ -226,8 +246,11 @@ class Venta(Base):
     total: Mapped[decimal.Decimal] = mapped_column(Numeric(12, 2), nullable=False)
     tipo_pago: Mapped[str] = mapped_column(Enum('efectivo', 'tarjeta', 'transferencia', name='tipo_pago_enum'), nullable=False)
     estado: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    nota_venta: Mapped[Optional[str]] = mapped_column(String(255))
+    cliente_id: Mapped[Optional[uuid.UUID]] = mapped_column(Uuid)
     user_id: Mapped[Optional[int]] = mapped_column(Integer)
 
+    cliente: Mapped[Optional['Cliente']] = relationship('Cliente')
     usuario: Mapped[Optional['User']] = relationship('User', back_populates='ventas')
     detalles: Mapped[list['VentaDetalle']] = relationship('VentaDetalle', back_populates='venta')
 
@@ -239,6 +262,7 @@ class VentaDetalle(Base):
         ForeignKeyConstraint(['producto_id'], ['product.producto_id'], ondelete='RESTRICT', name='venta_detalle_producto_id_fkey'),
         ForeignKeyConstraint(['venta_id'], ['venta.venta_id'], ondelete='CASCADE', name='venta_detalle_venta_id_fkey'),
         PrimaryKeyConstraint('venta_detalle_id', name='venta_detalle_pkey'),
+        UniqueConstraint('venta_id', 'producto_id', name='venta_detalle_venta_producto_key'),
         Index('ix_venta_detalle_venta_id', 'venta_id'),
         Index('ix_venta_detalle_producto_id', 'producto_id')
     )

@@ -31,6 +31,7 @@ class ProductRepository(ProductRepositoryInterface):
             precio_venta=product_entity.precio_venta,
             costo=product_entity.costo,
             margen=product_entity.margen,
+            iva=product_entity.iva,
             creado_por_id=product_entity.creado_por_id,
             actualizado_por_id=product_entity.actualizado_por_id,
             fecha_creacion=fecha_creacion,
@@ -82,6 +83,7 @@ class ProductRepository(ProductRepositoryInterface):
             price_value = Decimal(term)
             filters.append(Product.precio_venta == price_value)
             filters.append(Product.costo == price_value)
+            filters.append(Product.iva == price_value)
         except Exception:
             pass
 
@@ -128,6 +130,7 @@ class ProductRepository(ProductRepositoryInterface):
         record.precio_venta = product_entity.precio_venta
         record.costo = product_entity.costo
         record.margen = product_entity.margen
+        record.iva = product_entity.iva
         record.estado = product_entity.estado
         record.creado_por_id = product_entity.creado_por_id
         record.actualizado_por_id = product_entity.actualizado_por_id
@@ -170,6 +173,14 @@ class ProductRepository(ProductRepositoryInterface):
         self.db.refresh(record)
         return self._to_entity(record)
 
+    def delete_product(self, product_id: int) -> bool:
+        record = self.db.get(Product, product_id)
+        if not record:
+            return False
+        self.db.delete(record)
+        self.db.commit()
+        return True
+
     def import_products(self, products: List[ProductEntity]) -> tuple[int, int]:
         if not products:
             return 0, 0
@@ -206,6 +217,7 @@ class ProductRepository(ProductRepositoryInterface):
                 precio_venta=entity.precio_venta,
                 costo=entity.costo,
                 margen=entity.margen,
+                iva=entity.iva,
                 creado_por_id=entity.creado_por_id,
                 actualizado_por_id=entity.actualizado_por_id,
                 fecha_creacion=fecha_creacion,

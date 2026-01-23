@@ -49,6 +49,11 @@ class ProductRepositoryInterface(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def delete_product(self, product_id: int) -> bool:
+        """Elimina un producto y devuelve True si existia."""
+        raise NotImplementedError
+
+    @abstractmethod
     def import_products(self, products: List[ProductEntity]) -> tuple[int, int]:
         """Importa productos en lote y devuelve (creados, omitidos)."""
         raise NotImplementedError
