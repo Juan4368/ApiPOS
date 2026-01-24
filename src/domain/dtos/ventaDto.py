@@ -20,6 +20,7 @@ class VentaRequest(BaseModel):
     user_id: Optional[int] = None
     estado: bool = True
     nota_venta: Optional[str] = None
+    numero_factura: Optional[str] = Field(None, max_length=50)
     cliente_id: Optional[UUID] = None
     impuesto: Decimal = Field(default=Decimal("0.00"), ge=Decimal("0.00"))
     descuento: Decimal = Field(default=Decimal("0.00"), ge=Decimal("0.00"))
@@ -48,8 +49,34 @@ class VentaResponse(BaseModel):
     tipo_pago: str
     estado: bool
     nota_venta: Optional[str]
+    numero_factura: Optional[str]
     cliente_id: Optional[UUID]
     user_id: Optional[int]
     detalles: list[VentaDetalleResponse] = Field(default_factory=list)
 
     model_config = {"from_attributes": True}
+
+
+class VentaStatusRequest(BaseModel):
+    """
+    DTO para actualizar el estado de una venta.
+    """
+
+    estado: bool
+
+
+class VentaUpdateRequest(BaseModel):
+    """
+    DTO para actualizar datos de una venta.
+    """
+
+    fecha: Optional[datetime] = None
+    impuesto: Optional[Decimal] = Field(default=None, ge=Decimal("0.00"))
+    descuento: Optional[Decimal] = Field(default=None, ge=Decimal("0.00"))
+    tipo_pago: Optional[str] = Field(default=None, min_length=1)
+    estado: Optional[bool] = None
+    nota_venta: Optional[str] = None
+    numero_factura: Optional[str] = Field(default=None, max_length=50)
+    cliente_id: Optional[UUID] = None
+    user_id: Optional[int] = None
+    detalles: Optional[list[VentaDetalleRequest]] = None

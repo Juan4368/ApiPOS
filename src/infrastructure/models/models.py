@@ -25,6 +25,7 @@ class CategoriaContabilidad(Base):
 
     cartera: Mapped[list['Cartera']] = relationship('Cartera', back_populates='categoria_contabilidad')
     ingreso: Mapped[list['Ingreso']] = relationship('Ingreso', back_populates='categoria_contabilidad')
+    egreso: Mapped[list['Egreso']] = relationship('Egreso', back_populates='categoria_contabilidad')
 
 
 class RefMovimiento(Base):
@@ -145,7 +146,6 @@ class Categoria(Base):
 
     actualizado_por: Mapped[Optional['User']] = relationship('User', foreign_keys=[actualizado_por_id], back_populates='categoria')
     creado_por: Mapped[Optional['User']] = relationship('User', foreign_keys=[creado_por_id], back_populates='categoria_')
-    egreso: Mapped[list['Egreso']] = relationship('Egreso', back_populates='categoria')
     product: Mapped[list['Product']] = relationship('Product', back_populates='categoria')
 
 
@@ -175,7 +175,7 @@ class Egreso(Base):
     __tablename__ = 'egreso'
     __table_args__ = (
         CheckConstraint('monto >= 0::numeric', name='ck_egreso_monto_no_negativo'),
-        ForeignKeyConstraint(['categoria_id'], ['categoria.categoria_id'], ondelete='SET NULL', name='egreso_categoria_id_fkey'),
+        ForeignKeyConstraint(['categoria_contabilidad_id'], ['categoria_contabilidad.id'], ondelete='SET NULL', name='egreso_categoria_contabilidad_id_fkey'),
         PrimaryKeyConstraint('egreso_id', name='egreso_pkey'),
         Index('ix_egreso_egreso_id', 'egreso_id'),
         Index('ix_egreso_fecha', 'fecha'),
@@ -186,11 +186,13 @@ class Egreso(Base):
     monto: Mapped[decimal.Decimal] = mapped_column(Numeric(10, 2), nullable=False)
     fecha: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False)
     tipo_egreso: Mapped[str] = mapped_column(Enum('efectivo', 'transferencia', name='tipo_egreso_enum'), nullable=False)
-    categoria_id: Mapped[Optional[int]] = mapped_column(Integer)
+    categoria_contabilidad_id: Mapped[Optional[int]] = mapped_column(Integer)
     notas: Mapped[Optional[str]] = mapped_column(String(255))
     cliente: Mapped[Optional[str]] = mapped_column(String(150))
 
-    categoria: Mapped[Optional['Categoria']] = relationship('Categoria', back_populates='egreso')
+    categoria_contabilidad: Mapped[Optional['CategoriaContabilidad']] = relationship(
+        'CategoriaContabilidad', back_populates='egreso'
+    )
 
 
 class Product(Base):
@@ -234,6 +236,7 @@ class Venta(Base):
         ForeignKeyConstraint(['cliente_id'], ['clientes.id'], ondelete='SET NULL', name='venta_cliente_id_fkey'),
         ForeignKeyConstraint(['user_id'], ['user.user_id'], ondelete='SET NULL', name='venta_user_id_fkey'),
         PrimaryKeyConstraint('venta_id', name='venta_pkey'),
+        UniqueConstraint('numero_factura', name='venta_numero_factura_key'),
         Index('ix_venta_fecha', 'fecha'),
         Index('ix_venta_venta_id', 'venta_id')
     )
@@ -247,6 +250,7 @@ class Venta(Base):
     tipo_pago: Mapped[str] = mapped_column(Enum('efectivo', 'tarjeta', 'transferencia', name='tipo_pago_enum'), nullable=False)
     estado: Mapped[bool] = mapped_column(Boolean, nullable=False)
     nota_venta: Mapped[Optional[str]] = mapped_column(String(255))
+    numero_factura: Mapped[Optional[str]] = mapped_column(String(50))
     cliente_id: Mapped[Optional[uuid.UUID]] = mapped_column(Uuid)
     user_id: Mapped[Optional[int]] = mapped_column(Integer)
 

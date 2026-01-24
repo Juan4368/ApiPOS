@@ -4,7 +4,11 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from src.config import get_db
-from src.domain.dtos.categoryDto import CategoryRequest, CategoryResponse
+from src.domain.dtos.categoryDto import (
+    CategoryRequest,
+    CategoryResponse,
+    CategoryStatusRequest,
+)
 from src.domain.dtos.genericResponseDto import CreationResponse, MessageResponse
 from src.domain.services.category_service import CategoryService
 from src.infrastructure.repository.createCategoryRepository import CategoryRepository
@@ -73,3 +77,18 @@ def delete_category(category_id: int, service: ServiceDep) -> MessageResponse:
             detail="Categoria no encontrada",
         )
     return MessageResponse(message="Categoria eliminada")
+
+
+@router.patch("/{category_id}/estado", response_model=CategoryResponse)
+def update_category_status(
+    category_id: int,
+    payload: CategoryStatusRequest,
+    service: ServiceDep,
+) -> CategoryResponse:
+    categoria = service.update_category_status(category_id, payload)
+    if not categoria:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Categoria no encontrada",
+        )
+    return categoria

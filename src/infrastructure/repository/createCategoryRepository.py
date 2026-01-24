@@ -95,6 +95,24 @@ class CategoryRepository(CategoryRepositoryInterface):
         self.db.commit()
         return True
 
+    def update_category_status(
+        self,
+        category_id: int,
+        estado: bool,
+        actualizado_por_id: Optional[int] = None,
+        fecha_actualizacion: Optional[datetime] = None,
+    ) -> Optional[CategoryEntity]:
+        record = self.db.get(Categoria, category_id)
+        if not record:
+            return None
+        record.estado = estado
+        if actualizado_por_id is not None:
+            record.actualizado_por_id = actualizado_por_id
+        record.fecha_actualizacion = fecha_actualizacion or datetime.now(timezone.utc)
+        self.db.commit()
+        self.db.refresh(record)
+        return self._to_entity(record)
+
     def _to_entity(self, record: Categoria) -> CategoryEntity:
         entity = CategoryEntity.from_model(record)
         entity.creado_por_nombre = (

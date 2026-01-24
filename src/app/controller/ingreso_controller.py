@@ -1,13 +1,16 @@
 from datetime import date
 from typing import Annotated, Optional
-from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from src.config import get_db
 from src.domain.dtos.genericResponseDto import CreationResponse
-from src.domain.dtos.ingresoDto import IngresoRequest, IngresoResponse
+from src.domain.dtos.ingresoDto import (
+    IngresoRequest,
+    IngresoResponse,
+    IngresoUpdateRequest,
+)
 from src.domain.services.ingreso_service import IngresoService
 from src.infrastructure.repository.createIngresoRepository import IngresoRepository
 
@@ -49,8 +52,32 @@ def list_ingresos(
 
 
 @router.get("/{ingreso_id}", response_model=IngresoResponse)
-def get_ingreso(ingreso_id: UUID, service: ServiceDep) -> IngresoResponse:
+def get_ingreso(ingreso_id: int, service: ServiceDep) -> IngresoResponse:
     ingreso = service.get_ingreso(ingreso_id)
+    if not ingreso:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ingreso no encontrado")
+    return ingreso
+
+
+@router.put("/{ingreso_id}", response_model=IngresoResponse)
+def update_ingreso(
+    ingreso_id: int,
+    payload: IngresoRequest,
+    service: ServiceDep,
+) -> IngresoResponse:
+    ingreso = service.update_ingreso(ingreso_id, payload)
+    if not ingreso:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ingreso no encontrado")
+    return ingreso
+
+
+@router.patch("/{ingreso_id}", response_model=IngresoResponse)
+def patch_ingreso(
+    ingreso_id: int,
+    payload: IngresoUpdateRequest,
+    service: ServiceDep,
+) -> IngresoResponse:
+    ingreso = service.patch_ingreso(ingreso_id, payload)
     if not ingreso:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ingreso no encontrado")
     return ingreso

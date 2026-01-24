@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from datetime import datetime
 from typing import List, Optional
 
 from domain.entities.categoryEntity import CategoryEntity
@@ -32,4 +33,15 @@ class CategoryRepositoryInterface(ABC):
     @abstractmethod
     def delete_category(self, category_id: int) -> bool:
         """Elimina una categoria por ID y devuelve True si fue borrada."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def update_category_status(
+        self,
+        category_id: int,
+        estado: bool,
+        actualizado_por_id: Optional[int] = None,
+        fecha_actualizacion: Optional[datetime] = None,
+    ) -> Optional[CategoryEntity]:
+        """Actualiza el estado de la categoria y devuelve la entidad actualizada."""
         raise NotImplementedError

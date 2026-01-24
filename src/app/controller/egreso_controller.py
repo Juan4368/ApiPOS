@@ -1,12 +1,15 @@
 from datetime import date
 from typing import Annotated, Optional
-from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from src.config import get_db
-from src.domain.dtos.egresoDto import EgresoRequest, EgresoResponse
+from src.domain.dtos.egresoDto import (
+    EgresoRequest,
+    EgresoResponse,
+    EgresoUpdateRequest,
+)
 from src.domain.dtos.genericResponseDto import CreationResponse
 from src.domain.services.egreso_service import EgresoService
 from src.infrastructure.repository.createEgresoRepository import EgresoRepository
@@ -49,8 +52,32 @@ def list_egresos(
 
 
 @router.get("/{egreso_id}", response_model=EgresoResponse)
-def get_egreso(egreso_id: UUID, service: ServiceDep) -> EgresoResponse:
+def get_egreso(egreso_id: int, service: ServiceDep) -> EgresoResponse:
     egreso = service.get_egreso(egreso_id)
+    if not egreso:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Egreso no encontrado")
+    return egreso
+
+
+@router.put("/{egreso_id}", response_model=EgresoResponse)
+def update_egreso(
+    egreso_id: int,
+    payload: EgresoRequest,
+    service: ServiceDep,
+) -> EgresoResponse:
+    egreso = service.update_egreso(egreso_id, payload)
+    if not egreso:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Egreso no encontrado")
+    return egreso
+
+
+@router.patch("/{egreso_id}", response_model=EgresoResponse)
+def patch_egreso(
+    egreso_id: int,
+    payload: EgresoUpdateRequest,
+    service: ServiceDep,
+) -> EgresoResponse:
+    egreso = service.patch_egreso(egreso_id, payload)
     if not egreso:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Egreso no encontrado")
     return egreso

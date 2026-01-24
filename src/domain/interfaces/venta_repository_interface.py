@@ -31,3 +31,17 @@ class VentaRepositoryInterface(ABC):
     def search_ventas(self, term: str) -> List[VentaEntity]:
         """Busca ventas por tipo_pago o montos."""
         raise NotImplementedError
+
+    @abstractmethod
+    def update_venta_status(self, venta_id: int, estado: bool) -> Optional[VentaEntity]:
+        """Actualiza el estado de la venta y devuelve la entidad actualizada."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def update_venta(
+        self,
+        venta_entity: VentaEntity,
+        detalles: Optional[List[VentaDetalleEntity]] = None,
+    ) -> Optional[VentaEntity]:
+        """Actualiza una venta y, si aplica, sus detalles."""
+        raise NotImplementedError

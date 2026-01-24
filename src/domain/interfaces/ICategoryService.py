@@ -3,7 +3,11 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import List, Optional
 
-from domain.dtos.categoryDto import CategoryRequest, CategoryResponse
+from domain.dtos.categoryDto import (
+    CategoryRequest,
+    CategoryResponse,
+    CategoryStatusRequest,
+)
 
 
 class ICategoryService(ABC):
@@ -25,4 +29,10 @@ class ICategoryService(ABC):
 
     @abstractmethod
     def delete_category(self, category_id: int) -> bool:
+        ...
+
+    @abstractmethod
+    def update_category_status(
+        self, category_id: int, data: CategoryStatusRequest
+    ) -> Optional[CategoryResponse]:
         ...

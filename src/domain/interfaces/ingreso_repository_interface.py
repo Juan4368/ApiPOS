@@ -23,3 +23,7 @@ class IngresoRepositoryInterface(ABC):
     ) -> List[IngresoEntity]:
         raise NotImplementedError
 
+    @abstractmethod
+    def update_ingreso(self, ingreso_id: int, entity: IngresoEntity) -> Optional[IngresoEntity]:
+        raise NotImplementedError
+

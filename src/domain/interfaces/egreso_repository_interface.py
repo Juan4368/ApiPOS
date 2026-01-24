@@ -23,3 +23,7 @@ class EgresoRepositoryInterface(ABC):
     ) -> List[EgresoEntity]:
         raise NotImplementedError
 
+    @abstractmethod
+    def update_egreso(self, egreso_id: int, entity: EgresoEntity) -> Optional[EgresoEntity]:
+        raise NotImplementedError
+

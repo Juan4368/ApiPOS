@@ -37,3 +37,13 @@ class CategoryResponse(BaseModel):
     actualizado_por_nombre: Optional[str] = None
 
     model_config = {"from_attributes": True}
+
+
+class CategoryStatusRequest(BaseModel):
+    """
+    DTO para actualizar el estado de una categoria.
+    """
+
+    estado: bool
+    actualizado_por_id: Optional[int] = None
+    fecha_actualizacion: Optional[datetime] = None

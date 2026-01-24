@@ -2,9 +2,8 @@ from __future__ import annotations
 
 from datetime import date
 from typing import List, Optional
-from uuid import UUID
 
-from domain.dtos.egresoDto import EgresoRequest, EgresoResponse
+from domain.dtos.egresoDto import EgresoRequest, EgresoResponse, EgresoUpdateRequest
 from domain.entities.egresoEntity import EgresoEntity
 from domain.interfaces.egreso_repository_interface import EgresoRepositoryInterface
 
@@ -17,17 +16,15 @@ class EgresoService:
         entity = EgresoEntity(
             fecha=data.fecha,
             monto=data.monto,
-            medio_pago=data.medio_pago,
-            descripcion=data.descripcion,
-            categoria_id=data.categoria_id,
-            whatsapp_user_id=data.whatsapp_user_id,
-            phone_number=data.phone_number,
-            proveedor=data.proveedor,
+            tipo_egreso=data.tipo_egreso,
+            notas=data.notas,
+            categoria_contabilidad_id=data.categoria_contabilidad_id,
+            cliente=data.cliente,
         )
         created = self.repository.create_egreso(entity)
         return EgresoResponse.model_validate(created)
 
-    def get_egreso(self, egreso_id: UUID) -> Optional[EgresoResponse]:
+    def get_egreso(self, egreso_id: int) -> Optional[EgresoResponse]:
         egreso = self.repository.get_egreso(egreso_id)
         if not egreso:
             return None
@@ -38,3 +35,46 @@ class EgresoService:
     ) -> List[EgresoResponse]:
         egresos = self.repository.list_egresos(desde=desde, hasta=hasta)
         return [EgresoResponse.model_validate(e) for e in egresos]
+
+    def update_egreso(
+        self, egreso_id: int, data: EgresoRequest
+    ) -> Optional[EgresoResponse]:
+        entity = EgresoEntity(
+            id=egreso_id,
+            fecha=data.fecha,
+            monto=data.monto,
+            tipo_egreso=data.tipo_egreso,
+            notas=data.notas,
+            categoria_contabilidad_id=data.categoria_contabilidad_id,
+            cliente=data.cliente,
+        )
+        updated = self.repository.update_egreso(egreso_id, entity)
+        if not updated:
+            return None
+        return EgresoResponse.model_validate(updated)
+
+    def patch_egreso(
+        self, egreso_id: int, data: EgresoUpdateRequest
+    ) -> Optional[EgresoResponse]:
+        current = self.repository.get_egreso(egreso_id)
+        if not current:
+            return None
+        entity = EgresoEntity(
+            id=egreso_id,
+            fecha=data.fecha if data.fecha is not None else current.fecha,
+            monto=data.monto if data.monto is not None else current.monto,
+            tipo_egreso=data.tipo_egreso if data.tipo_egreso is not None else current.tipo_egreso,
+            notas=(
+                data.notas if data.notas is not None else current.notas
+            ),
+            categoria_contabilidad_id=(
+                data.categoria_contabilidad_id
+                if data.categoria_contabilidad_id is not None
+                else current.categoria_contabilidad_id
+            ),
+            cliente=data.cliente if data.cliente is not None else current.cliente,
+        )
+        updated = self.repository.update_egreso(egreso_id, entity)
+        if not updated:
+            return None
+        return EgresoResponse.model_validate(updated)

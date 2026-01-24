@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date
 from decimal import Decimal
 from typing import Optional
-from uuid import UUID
 
 from pydantic import BaseModel, Field
 
@@ -13,24 +12,28 @@ from domain.enums.contabilidadEnums import MedioPago
 class EgresoRequest(BaseModel):
     fecha: date
     monto: Decimal = Field(..., ge=Decimal("0.00"))
-    medio_pago: MedioPago
-    descripcion: Optional[str] = None
-    categoria_id: UUID
-    whatsapp_user_id: str = Field(..., min_length=1, max_length=255)
-    phone_number: str = Field(..., min_length=1, max_length=50)
-    proveedor: Optional[str] = Field(default=None, max_length=255)
+    tipo_egreso: MedioPago
+    notas: Optional[str] = None
+    categoria_contabilidad_id: Optional[int] = None
+    cliente: Optional[str] = Field(default=None, max_length=255)
 
 
 class EgresoResponse(BaseModel):
-    id: UUID
+    id: int
     fecha: date
     monto: Decimal
-    medio_pago: MedioPago
-    descripcion: Optional[str]
-    categoria_id: UUID
-    whatsapp_user_id: str
-    phone_number: str
-    proveedor: Optional[str] = None
-    created_at: Optional[datetime] = None
+    tipo_egreso: MedioPago
+    notas: Optional[str]
+    categoria_contabilidad_id: Optional[int] = None
+    cliente: Optional[str] = None
 
     model_config = {"from_attributes": True}
+
+
+class EgresoUpdateRequest(BaseModel):
+    fecha: Optional[date] = None
+    monto: Optional[Decimal] = Field(default=None, ge=Decimal("0.00"))
+    tipo_egreso: Optional[MedioPago] = None
+    notas: Optional[str] = None
+    categoria_contabilidad_id: Optional[int] = None
+    cliente: Optional[str] = Field(default=None, max_length=255)

@@ -10,6 +10,5 @@ class CategoriaTipo(str, Enum):
 
 class MedioPago(str, Enum):
     EFECTIVO = "EFECTIVO"
-    TARJETA = "TARJETA"
     TRANSFERENCIA = "TRANSFERENCIA"
 

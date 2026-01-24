@@ -2,7 +2,11 @@ from __future__ import annotations
 
 from typing import List, Optional
 
-from domain.dtos.categoryDto import CategoryRequest, CategoryResponse
+from domain.dtos.categoryDto import (
+    CategoryRequest,
+    CategoryResponse,
+    CategoryStatusRequest,
+)
 from domain.entities.categoryEntity import CategoryEntity
 from domain.interfaces.category_repository_interface import (
     CategoryRepositoryInterface,
@@ -45,3 +49,16 @@ class CategoryService(ICategoryService):
 
     def delete_category(self, category_id: int) -> bool:
         return self.repository.delete_category(category_id)
+
+    def update_category_status(
+        self, category_id: int, data: CategoryStatusRequest
+    ) -> Optional[CategoryResponse]:
+        updated = self.repository.update_category_status(
+            category_id=category_id,
+            estado=data.estado,
+            actualizado_por_id=data.actualizado_por_id,
+            fecha_actualizacion=data.fecha_actualizacion,
+        )
+        if not updated:
+            return None
+        return CategoryResponse.model_validate(updated)

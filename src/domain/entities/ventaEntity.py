@@ -24,6 +24,7 @@ class VentaEntity(BaseModel):
     tipo_pago: str = Field(..., min_length=1)
     estado: bool = True
     nota_venta: Optional[str] = None
+    numero_factura: Optional[str] = None
     cliente_id: Optional[UUID] = None
     user_id: Optional[int] = None
     detalles: Optional[list[VentaDetalleEntity]] = None
