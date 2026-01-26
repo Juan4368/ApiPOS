@@ -5,7 +5,7 @@ from decimal import Decimal
 from typing import Optional
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 class VentaDetalleRequest(BaseModel):
@@ -16,7 +16,8 @@ class VentaDetalleRequest(BaseModel):
 
 
 class VentaRequest(BaseModel):
-    tipo_pago: str = Field(..., min_length=1)
+    tipo_pago: Optional[str] = Field(default=None, min_length=1, description="Si es null, se considera credito.")
+    es_credito: bool = Field(default=False, description="Se fuerza a true si tipo_pago es null.")
     user_id: Optional[int] = None
     estado: bool = True
     nota_venta: Optional[str] = None
@@ -27,11 +28,18 @@ class VentaRequest(BaseModel):
     fecha: Optional[datetime] = None
     detalles: list[VentaDetalleRequest] = Field(default_factory=list)
 
+    @model_validator(mode="after")
+    def _auto_credito(self) -> "VentaRequest":
+        if self.tipo_pago is None:
+            self.es_credito = True
+        return self
+
 
 class VentaDetalleResponse(BaseModel):
     venta_detalle_id: int
     venta_id: int
     producto_id: int
+    producto_nombre: Optional[str] = None
     cantidad: int
     precio_unitario: Decimal
     subtotal: Decimal
@@ -46,7 +54,8 @@ class VentaResponse(BaseModel):
     impuesto: Decimal
     descuento: Decimal
     total: Decimal
-    tipo_pago: str
+    tipo_pago: Optional[str] = None
+    es_credito: bool = False
     estado: bool
     nota_venta: Optional[str]
     numero_factura: Optional[str]
@@ -73,7 +82,8 @@ class VentaUpdateRequest(BaseModel):
     fecha: Optional[datetime] = None
     impuesto: Optional[Decimal] = Field(default=None, ge=Decimal("0.00"))
     descuento: Optional[Decimal] = Field(default=None, ge=Decimal("0.00"))
-    tipo_pago: Optional[str] = Field(default=None, min_length=1)
+    tipo_pago: Optional[str] = Field(default=None, min_length=1, description="Si se envia null, se marca credito.")
+    es_credito: Optional[bool] = Field(default=None, description="Se fuerza a true si tipo_pago es null.")
     estado: Optional[bool] = None
     nota_venta: Optional[str] = None
     numero_factura: Optional[str] = Field(default=None, max_length=50)

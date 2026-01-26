@@ -14,6 +14,7 @@ class VentaDetalleEntity(BaseModel):
     venta_detalle_id: Optional[int] = None
     venta_id: Optional[int] = None
     producto_id: int = Field(..., ge=1)
+    producto_nombre: Optional[str] = None
     cantidad: int = Field(..., ge=1)
     precio_unitario: Decimal = Field(..., ge=Decimal("0.00"))
     subtotal: Decimal = Field(..., ge=Decimal("0.00"))

@@ -3,7 +3,7 @@ import datetime
 import decimal
 import uuid
 
-from sqlalchemy import Boolean, CheckConstraint, DateTime, Enum, ForeignKeyConstraint, Identity, Index, Integer, Numeric, PrimaryKeyConstraint, String, Text, UniqueConstraint, Uuid
+from sqlalchemy import Boolean, CheckConstraint, DateTime, Enum, ForeignKeyConstraint, Identity, Index, Integer, Numeric, PrimaryKeyConstraint, String, Text, UniqueConstraint, Uuid, text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 class Base(DeclarativeBase):
@@ -14,14 +14,13 @@ class CategoriaContabilidad(Base):
     __tablename__ = 'categoria_contabilidad'
     __table_args__ = (
         PrimaryKeyConstraint('id', name='categoria_contabilidad_pkey'),
-        UniqueConstraint('codigo', name='categoria_contabilidad_codigo_key'),
         UniqueConstraint('nombre', name='categoria_contabilidad_nombre_key'),
         Index('ix_categoria_contabilidad_id', 'id')
     )
 
     id: Mapped[int] = mapped_column(Integer, Identity(start=1, increment=1, minvalue=1, maxvalue=2147483647, cycle=False, cache=1), primary_key=True)
     nombre: Mapped[str] = mapped_column(String(100), nullable=False)
-    codigo: Mapped[str] = mapped_column(String(50), nullable=False)
+    tipo_categoria: Mapped[str] = mapped_column(Enum('INGRESO', 'EGRESO', name='tipo_categoria_enum'), nullable=False)
 
     cartera: Mapped[list['Cartera']] = relationship('Cartera', back_populates='categoria_contabilidad')
     ingreso: Mapped[list['Ingreso']] = relationship('Ingreso', back_populates='categoria_contabilidad')
@@ -87,6 +86,7 @@ class User(Base):
     stock_: Mapped[list['Stock']] = relationship('Stock', foreign_keys='[Stock.creado_por_id]', back_populates='creado_por')
     movimientos_stock: Mapped[list['MovimientosStock']] = relationship('MovimientosStock', back_populates='realizado_por')
     ventas: Mapped[list['Venta']] = relationship('Venta', back_populates='usuario')
+    movimientos_financieros: Mapped[list['MovimientoFinanciero']] = relationship('MovimientoFinanciero', back_populates='usuario')
 
 
 class Cliente(Base):
@@ -247,7 +247,8 @@ class Venta(Base):
     impuesto: Mapped[decimal.Decimal] = mapped_column(Numeric(12, 2), nullable=False)
     descuento: Mapped[decimal.Decimal] = mapped_column(Numeric(12, 2), nullable=False)
     total: Mapped[decimal.Decimal] = mapped_column(Numeric(12, 2), nullable=False)
-    tipo_pago: Mapped[str] = mapped_column(Enum('efectivo', 'tarjeta', 'transferencia', name='tipo_pago_enum'), nullable=False)
+    tipo_pago: Mapped[Optional[str]] = mapped_column(Enum('efectivo', 'tarjeta', 'transferencia', name='tipo_pago_enum'))
+    es_credito: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     estado: Mapped[bool] = mapped_column(Boolean, nullable=False)
     nota_venta: Mapped[Optional[str]] = mapped_column(String(255))
     numero_factura: Mapped[Optional[str]] = mapped_column(String(50))
@@ -257,6 +258,8 @@ class Venta(Base):
     cliente: Mapped[Optional['Cliente']] = relationship('Cliente')
     usuario: Mapped[Optional['User']] = relationship('User', back_populates='ventas')
     detalles: Mapped[list['VentaDetalle']] = relationship('VentaDetalle', back_populates='venta')
+    movimientos_financieros: Mapped[list['MovimientoFinanciero']] = relationship('MovimientoFinanciero', back_populates='venta')
+    cuentas_por_cobrar: Mapped[list['CuentaCobrar']] = relationship('CuentaCobrar', back_populates='venta')
 
 
 class VentaDetalle(Base):
@@ -335,3 +338,155 @@ class MovimientosStock(Base):
     ref_movimiento: Mapped['RefMovimiento'] = relationship('RefMovimiento', back_populates='movimientos_stock')
     stock: Mapped['Stock'] = relationship('Stock', back_populates='movimientos_stock')
     tipo_movimiento: Mapped['TipoMovimiento'] = relationship('TipoMovimiento', back_populates='movimientos_stock')
+
+
+class Caja(Base):
+    __tablename__ = 'cajas'
+    __table_args__ = (
+        CheckConstraint('saldo_inicial >= 0::numeric', name='ck_cajas_saldo_inicial_no_negativo'),
+        PrimaryKeyConstraint('id', name='cajas_pkey'),
+        Index('ix_cajas_id', 'id')
+    )
+
+    id: Mapped[int] = mapped_column(Integer, Identity(start=1, increment=1, minvalue=1, maxvalue=2147483647, cycle=False, cache=1), primary_key=True)
+    nombre: Mapped[str] = mapped_column(String(150), nullable=False)
+    saldo_inicial: Mapped[decimal.Decimal] = mapped_column(Numeric(14, 2), nullable=False, default=decimal.Decimal('0.00'))
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False, default=datetime.datetime.utcnow)
+
+    movimientos_financieros: Mapped[list['MovimientoFinanciero']] = relationship('MovimientoFinanciero', back_populates='caja')
+    cierres_caja: Mapped[list['CierreCaja']] = relationship('CierreCaja', back_populates='caja')
+
+
+class Proveedor(Base):
+    __tablename__ = 'proveedores'
+    __table_args__ = (
+        PrimaryKeyConstraint('id', name='proveedores_pkey'),
+        Index('ix_proveedores_id', 'id')
+    )
+
+    id: Mapped[int] = mapped_column(Integer, Identity(start=1, increment=1, minvalue=1, maxvalue=2147483647, cycle=False, cache=1), primary_key=True)
+    nombre: Mapped[str] = mapped_column(String(255), nullable=False)
+    telefono: Mapped[Optional[str]] = mapped_column(String(50))
+    email: Mapped[Optional[str]] = mapped_column(String(255))
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False, default=datetime.datetime.utcnow)
+
+    movimientos_financieros: Mapped[list['MovimientoFinanciero']] = relationship('MovimientoFinanciero', back_populates='proveedor')
+
+
+class CierreCaja(Base):
+    __tablename__ = 'cierres_caja'
+    __table_args__ = (
+        ForeignKeyConstraint(['caja_id'], ['cajas.id'], ondelete='RESTRICT', name='cierres_caja_caja_id_fkey'),
+        PrimaryKeyConstraint('id', name='cierres_caja_pkey'),
+        Index('ix_cierres_caja_id', 'id'),
+        Index('ix_cierres_caja_caja_fecha', 'caja_id', 'fecha_apertura', 'fecha_cierre')
+    )
+
+    id: Mapped[int] = mapped_column(Integer, Identity(start=1, increment=1, minvalue=1, maxvalue=2147483647, cycle=False, cache=1), primary_key=True)
+    caja_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    fecha_apertura: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False)
+    fecha_cierre: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
+    saldo_inicial: Mapped[decimal.Decimal] = mapped_column(Numeric(14, 2), nullable=False, default=decimal.Decimal('0.00'))
+    saldo_final: Mapped[Optional[decimal.Decimal]] = mapped_column(Numeric(14, 2))
+    total_ingresos: Mapped[decimal.Decimal] = mapped_column(Numeric(14, 2), nullable=False, default=decimal.Decimal('0.00'))
+    total_egresos: Mapped[decimal.Decimal] = mapped_column(Numeric(14, 2), nullable=False, default=decimal.Decimal('0.00'))
+    observaciones: Mapped[Optional[str]] = mapped_column(Text)
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False, default=datetime.datetime.utcnow)
+
+    caja: Mapped['Caja'] = relationship('Caja', back_populates='cierres_caja')
+
+
+class MovimientoFinanciero(Base):
+    __tablename__ = 'movimientos_financieros'
+    __table_args__ = (
+        CheckConstraint('monto > 0::numeric', name='ck_movimientos_financieros_monto_pos'),
+        CheckConstraint(
+            "(proveedor_id IS NULL) OR (tipo = 'EGRESO')",
+            name='ck_movimientos_financieros_proveedor_tipo'
+        ),
+        ForeignKeyConstraint(['caja_id'], ['cajas.id'], ondelete='RESTRICT', name='movimientos_financieros_caja_id_fkey'),
+        ForeignKeyConstraint(['usuario_id'], ['user.user_id'], ondelete='SET NULL', name='movimientos_financieros_usuario_id_fkey'),
+        ForeignKeyConstraint(['venta_id'], ['venta.venta_id'], ondelete='SET NULL', name='movimientos_financieros_venta_id_fkey'),
+        ForeignKeyConstraint(['proveedor_id'], ['proveedores.id'], ondelete='SET NULL', name='movimientos_financieros_proveedor_id_fkey'),
+        PrimaryKeyConstraint('id', name='movimientos_financieros_pkey'),
+        Index('ix_movimientos_financieros_id', 'id'),
+        Index('ix_movimientos_financieros_caja_fecha', 'caja_id', 'fecha'),
+        Index('ix_movimientos_financieros_tipo_fecha', 'tipo', 'fecha'),
+        Index(
+            'ix_movimientos_financieros_proveedor_fecha',
+            'proveedor_id',
+            'fecha',
+            postgresql_where=text('proveedor_id IS NOT NULL')
+        ),
+        Index('ix_movimientos_financieros_usuario', 'usuario_id'),
+        Index('ix_movimientos_financieros_venta', 'venta_id'),
+        Index('ix_movimientos_financieros_fecha', 'fecha')
+    )
+
+    id: Mapped[int] = mapped_column(Integer, Identity(start=1, increment=1, minvalue=1, maxvalue=2147483647, cycle=False, cache=1), primary_key=True)
+    fecha: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False)
+    tipo: Mapped[str] = mapped_column(Enum('INGRESO', 'EGRESO', name='tipo_movimiento_financiero_enum'), nullable=False)
+    monto: Mapped[decimal.Decimal] = mapped_column(Numeric(14, 2), nullable=False)
+    concepto: Mapped[str] = mapped_column(Text, nullable=False)
+    usuario_id: Mapped[Optional[int]] = mapped_column(Integer)
+    venta_id: Mapped[Optional[int]] = mapped_column(Integer)
+    proveedor_id: Mapped[Optional[int]] = mapped_column(Integer)
+    caja_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False, default=datetime.datetime.utcnow)
+
+    caja: Mapped['Caja'] = relationship('Caja', back_populates='movimientos_financieros')
+    usuario: Mapped[Optional['User']] = relationship('User', back_populates='movimientos_financieros')
+    venta: Mapped[Optional['Venta']] = relationship('Venta', back_populates='movimientos_financieros')
+    proveedor: Mapped[Optional['Proveedor']] = relationship('Proveedor', back_populates='movimientos_financieros')
+
+
+class CuentaCobrar(Base):
+    __tablename__ = 'cuentas_por_cobrar'
+    __table_args__ = (
+        CheckConstraint('total >= 0::numeric', name='ck_cuentas_por_cobrar_total_no_neg'),
+        CheckConstraint('saldo >= 0::numeric', name='ck_cuentas_por_cobrar_saldo_no_neg'),
+        CheckConstraint('saldo <= total', name='ck_cuentas_por_cobrar_saldo_no_mayor_total'),
+        ForeignKeyConstraint(['venta_id'], ['venta.venta_id'], ondelete='SET NULL', name='cuentas_por_cobrar_venta_id_fkey'),
+        ForeignKeyConstraint(['cliente_id'], ['clientes.id'], ondelete='SET NULL', name='cuentas_por_cobrar_cliente_id_fkey'),
+        PrimaryKeyConstraint('id', name='cuentas_por_cobrar_pkey'),
+        Index('ix_cuentas_por_cobrar_id', 'id'),
+        Index('ix_cuentas_por_cobrar_venta', 'venta_id'),
+        Index('ix_cuentas_por_cobrar_cliente', 'cliente_id'),
+        Index('ix_cuentas_por_cobrar_estado', 'estado')
+    )
+
+    id: Mapped[int] = mapped_column(Integer, Identity(start=1, increment=1, minvalue=1, maxvalue=2147483647, cycle=False, cache=1), primary_key=True)
+    venta_id: Mapped[Optional[int]] = mapped_column(Integer)
+    cliente_id: Mapped[Optional[uuid.UUID]] = mapped_column(Uuid)
+    total: Mapped[decimal.Decimal] = mapped_column(Numeric(14, 2), nullable=False)
+    saldo: Mapped[decimal.Decimal] = mapped_column(Numeric(14, 2), nullable=False)
+    estado: Mapped[str] = mapped_column(Enum('PENDIENTE', 'PARCIAL', 'PAGADO', 'ANULADO', name='credito_estado_enum'), nullable=False)
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False, default=datetime.datetime.utcnow)
+    updated_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
+
+    venta: Mapped[Optional['Venta']] = relationship('Venta', back_populates='cuentas_por_cobrar')
+    cliente: Mapped[Optional['Cliente']] = relationship('Cliente')
+    abonos: Mapped[list['AbonoCuenta']] = relationship('AbonoCuenta', back_populates='cuenta')
+
+
+class AbonoCuenta(Base):
+    __tablename__ = 'abonos_cuenta'
+    __table_args__ = (
+        CheckConstraint('monto > 0::numeric', name='ck_abonos_cuenta_monto_pos'),
+        ForeignKeyConstraint(['cuenta_id'], ['cuentas_por_cobrar.id'], ondelete='CASCADE', name='abonos_cuenta_cuenta_id_fkey'),
+        ForeignKeyConstraint(['movimiento_id'], ['movimientos_financieros.id'], ondelete='CASCADE', name='abonos_cuenta_movimiento_id_fkey'),
+        PrimaryKeyConstraint('id', name='abonos_cuenta_pkey'),
+        UniqueConstraint('movimiento_id', name='abonos_cuenta_movimiento_id_key'),
+        Index('ix_abonos_cuenta_id', 'id'),
+        Index('ix_abonos_cuenta_cuenta', 'cuenta_id')
+    )
+
+    id: Mapped[int] = mapped_column(Integer, Identity(start=1, increment=1, minvalue=1, maxvalue=2147483647, cycle=False, cache=1), primary_key=True)
+    cuenta_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    movimiento_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    monto: Mapped[decimal.Decimal] = mapped_column(Numeric(14, 2), nullable=False)
+    fecha: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False)
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False, default=datetime.datetime.utcnow)
+
+    cuenta: Mapped['CuentaCobrar'] = relationship('CuentaCobrar', back_populates='abonos')
+    movimiento: Mapped['MovimientoFinanciero'] = relationship('MovimientoFinanciero')

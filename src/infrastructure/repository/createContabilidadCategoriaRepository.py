@@ -5,6 +5,7 @@ from typing import List, Optional
 from sqlalchemy.orm import Session
 
 from domain.entities.contabilidadCategoriaEntity import ContabilidadCategoriaEntity
+from domain.enums.contabilidadEnums import CategoriaTipo
 from domain.interfaces.contabilidad_categoria_repository_interface import (
     ContabilidadCategoriaRepositoryInterface,
 )
@@ -20,7 +21,7 @@ class ContabilidadCategoriaRepository(ContabilidadCategoriaRepositoryInterface):
     ) -> ContabilidadCategoriaEntity:
         categoria_orm = CategoriaContabilidad(
             nombre=entity.nombre,
-            codigo=entity.codigo,
+            tipo_categoria=self._to_tipo_categoria(entity.tipo_categoria),
         )
         self.db.add(categoria_orm)
         self.db.commit()
@@ -54,7 +55,12 @@ class ContabilidadCategoriaRepository(ContabilidadCategoriaRepositoryInterface):
         if not record:
             return None
         record.nombre = entity.nombre
-        record.codigo = entity.codigo
+        record.tipo_categoria = self._to_tipo_categoria(entity.tipo_categoria)
         self.db.commit()
         self.db.refresh(record)
         return ContabilidadCategoriaEntity.from_model(record)
+
+    def _to_tipo_categoria(self, tipo: CategoriaTipo) -> str:
+        if isinstance(tipo, CategoriaTipo):
+            return tipo.value
+        return str(tipo)

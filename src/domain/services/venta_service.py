@@ -23,6 +23,11 @@ class VentaService(IVentaService):
         self.repository = repository
 
     def create_venta(self, data: VentaRequest) -> VentaResponse:
+        es_credito = data.es_credito
+        if data.tipo_pago is None:
+            es_credito = True
+        if not es_credito and not data.tipo_pago:
+            raise ValueError("tipo_pago es obligatorio cuando no es credito")
         subtotal = Decimal("0.00")
         detalles: list[VentaDetalleEntity] = []
         for item in data.detalles:
@@ -51,6 +56,7 @@ class VentaService(IVentaService):
             descuento=descuento,
             total=total,
             tipo_pago=data.tipo_pago,
+            es_credito=es_credito,
             estado=data.estado,
             nota_venta=data.nota_venta,
             numero_factura=data.numero_factura,
@@ -112,6 +118,18 @@ class VentaService(IVentaService):
         impuesto = data.impuesto if data.impuesto is not None else current.impuesto
         descuento = data.descuento if data.descuento is not None else current.descuento
         total = subtotal + Decimal(impuesto) - Decimal(descuento)
+        if "es_credito" in data.model_fields_set:
+            es_credito = data.es_credito
+        else:
+            es_credito = current.es_credito
+        if "tipo_pago" in data.model_fields_set:
+            tipo_pago = data.tipo_pago
+        else:
+            tipo_pago = current.tipo_pago
+        if tipo_pago is None:
+            es_credito = True
+        if not es_credito and not tipo_pago:
+            raise ValueError("tipo_pago es obligatorio cuando no es credito")
 
         venta_entity = VentaEntity(
             venta_id=venta_id,
@@ -120,7 +138,8 @@ class VentaService(IVentaService):
             impuesto=Decimal(impuesto),
             descuento=Decimal(descuento),
             total=total,
-            tipo_pago=data.tipo_pago or current.tipo_pago,
+            tipo_pago=tipo_pago,
+            es_credito=es_credito,
             estado=data.estado if data.estado is not None else current.estado,
             nota_venta=data.nota_venta if data.nota_venta is not None else current.nota_venta,
             numero_factura=(

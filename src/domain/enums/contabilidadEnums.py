@@ -12,3 +12,10 @@ class MedioPago(str, Enum):
     EFECTIVO = "EFECTIVO"
     TRANSFERENCIA = "TRANSFERENCIA"
 
+
+class CreditoEstado(str, Enum):
+    PENDIENTE = "PENDIENTE"
+    PARCIAL = "PARCIAL"
+    PAGADO = "PAGADO"
+    ANULADO = "ANULADO"
+

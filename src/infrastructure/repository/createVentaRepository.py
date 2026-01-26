@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session, selectinload
 from domain.entities.ventaDetalleEntity import VentaDetalleEntity
 from domain.entities.ventaEntity import VentaEntity
 from domain.interfaces.venta_repository_interface import VentaRepositoryInterface
-from src.infrastructure.models.models import Venta, VentaDetalle
+from src.infrastructure.models.models import CuentaCobrar, Venta, VentaDetalle
 
 
 class VentaRepository(VentaRepositoryInterface):
@@ -36,6 +36,7 @@ class VentaRepository(VentaRepositoryInterface):
             descuento=venta_entity.descuento,
             total=venta_entity.total,
             tipo_pago=venta_entity.tipo_pago,
+            es_credito=venta_entity.es_credito,
             estado=venta_entity.estado,
             nota_venta=venta_entity.nota_venta,
             numero_factura=numero_factura,
@@ -57,6 +58,22 @@ class VentaRepository(VentaRepositoryInterface):
         ]
         if detalle_orms:
             self.db.add_all(detalle_orms)
+
+        if venta_entity.es_credito:
+            existing = (
+                self.db.query(CuentaCobrar)
+                .filter(CuentaCobrar.venta_id == venta_orm.venta_id)
+                .first()
+            )
+            if not existing:
+                cuenta = CuentaCobrar(
+                    venta_id=venta_orm.venta_id,
+                    cliente_id=venta_orm.cliente_id,
+                    total=venta_orm.total,
+                    saldo=venta_orm.total,
+                    estado="PENDIENTE",
+                )
+                self.db.add(cuenta)
 
         self.db.commit()
         self.db.refresh(venta_orm)
@@ -131,11 +148,28 @@ class VentaRepository(VentaRepositoryInterface):
         record.descuento = venta_entity.descuento
         record.total = venta_entity.total
         record.tipo_pago = venta_entity.tipo_pago
+        record.es_credito = venta_entity.es_credito
         record.estado = venta_entity.estado
         record.nota_venta = venta_entity.nota_venta
         record.numero_factura = venta_entity.numero_factura
         record.cliente_id = venta_entity.cliente_id
         record.user_id = venta_entity.user_id
+
+        if venta_entity.es_credito:
+            existing = (
+                self.db.query(CuentaCobrar)
+                .filter(CuentaCobrar.venta_id == record.venta_id)
+                .first()
+            )
+            if not existing:
+                cuenta = CuentaCobrar(
+                    venta_id=record.venta_id,
+                    cliente_id=record.cliente_id,
+                    total=record.total,
+                    saldo=record.total,
+                    estado="PENDIENTE",
+                )
+                self.db.add(cuenta)
 
         detalle_orms: list[VentaDetalle] = []
         if detalles is not None:

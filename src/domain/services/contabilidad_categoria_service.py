@@ -22,7 +22,7 @@ class ContabilidadCategoriaService:
     ) -> ContabilidadCategoriaResponse:
         entity = ContabilidadCategoriaEntity(
             nombre=data.nombre,
-            codigo=data.codigo,
+            tipo_categoria=data.tipo_categoria,
         )
         created = self.repository.create_categoria(entity)
         return ContabilidadCategoriaResponse.model_validate(created)
@@ -49,7 +49,7 @@ class ContabilidadCategoriaService:
         entity = ContabilidadCategoriaEntity(
             id=categoria_id,
             nombre=data.nombre,
-            codigo=data.codigo,
+            tipo_categoria=data.tipo_categoria,
         )
         updated = self.repository.update_categoria(categoria_id, entity)
         if not updated:
@@ -65,7 +65,11 @@ class ContabilidadCategoriaService:
         entity = ContabilidadCategoriaEntity(
             id=categoria_id,
             nombre=data.nombre if data.nombre is not None else current.nombre,
-            codigo=data.codigo if data.codigo is not None else current.codigo,
+            tipo_categoria=(
+                data.tipo_categoria
+                if data.tipo_categoria is not None
+                else current.tipo_categoria
+            ),
         )
         updated = self.repository.update_categoria(categoria_id, entity)
         if not updated:

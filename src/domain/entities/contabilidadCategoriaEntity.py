@@ -4,11 +4,13 @@ from typing import Any, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from domain.enums.contabilidadEnums import CategoriaTipo
+
 
 class ContabilidadCategoriaEntity(BaseModel):
     id: Optional[int] = None
     nombre: str = Field(..., min_length=1)
-    codigo: str = Field(..., min_length=1)
+    tipo_categoria: CategoriaTipo
 
     model_config = ConfigDict(
         from_attributes=True,

@@ -21,7 +21,8 @@ class VentaEntity(BaseModel):
     impuesto: Decimal = Field(default=Decimal("0.00"), ge=Decimal("0.00"))
     descuento: Decimal = Field(default=Decimal("0.00"), ge=Decimal("0.00"))
     total: Decimal = Field(default=Decimal("0.00"), ge=Decimal("0.00"))
-    tipo_pago: str = Field(..., min_length=1)
+    tipo_pago: Optional[str] = None
+    es_credito: bool = False
     estado: bool = True
     nota_venta: Optional[str] = None
     numero_factura: Optional[str] = None
