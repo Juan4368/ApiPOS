@@ -61,7 +61,7 @@ def create_app() -> FastAPI:
         description="API para la gestion de pedidos",
         docs_url="/docs",
         redoc_url=None,
-        openapi_url="/openapi.json",
+        openapi_url="/ApiPOS/openapi.json",
     )
 
     app.add_middleware(
