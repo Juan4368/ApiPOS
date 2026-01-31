@@ -27,12 +27,12 @@ class UserRepositoryInterface(ABC):
 
     @abstractmethod
     def search_users(self, term: str) -> List[UserEntity]:
-        """Busca usuarios por correo, nombre, rol o estado."""
+        """Busca usuarios por username, email o estado."""
         raise NotImplementedError
 
     @abstractmethod
     def update_user_status(
-        self, user_id: int, activo: bool, actualizado_at: Optional[datetime] = None
+        self, user_id: int, is_active: bool, updated_at: Optional[datetime] = None
     ) -> Optional[UserEntity]:
         """Actualiza el estado activo del usuario y devuelve la entidad actualizada."""
         raise NotImplementedError
@@ -41,13 +41,14 @@ class UserRepositoryInterface(ABC):
     def update_user(
         self,
         user_id: int,
-        correo: Optional[str] = None,
-        contrasena_hash: Optional[str] = None,
-        role: Optional[str] = None,
-        activo: Optional[bool] = None,
-        nombre_completo: Optional[str] = None,
-        numero_contacto: Optional[str] = None,
-        actualizado_at: Optional[datetime] = None,
+        username: Optional[str] = None,
+        email: Optional[str] = None,
+        password_hash: Optional[str] = None,
+        thelefone_number: Optional[str] = None,
+        is_active: Optional[bool] = None,
+        is_verified: Optional[bool] = None,
+        last_login_at: Optional[datetime] = None,
+        updated_at: Optional[datetime] = None,
     ) -> Optional[UserEntity]:
         """Actualiza datos del usuario y devuelve la entidad actualizada."""
         raise NotImplementedError

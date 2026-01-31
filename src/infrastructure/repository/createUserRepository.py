@@ -18,18 +18,19 @@ class UserRepository(UserRepositoryInterface):
         self.db = db
 
     def create_user(self, user_entity: UserEntity) -> UserEntity:
-        creado_at = user_entity.creado_at or datetime.now(timezone.utc)
-        actualizado_at = user_entity.actualizado_at or creado_at
+        created_at = user_entity.created_at or datetime.now(timezone.utc)
+        updated_at = user_entity.updated_at or created_at
         user_orm = User(
             user_id=user_entity.user_id,
-            correo=user_entity.correo,
-            contrasena_hash=user_entity.contrasena_hash,
-            role=user_entity.role,
-            activo=user_entity.activo,
-            creado_at=creado_at,
-            actualizado_at=actualizado_at,
-            nombre_completo=user_entity.nombre_completo,
-            numero_contacto=user_entity.numero_contacto,
+            username=user_entity.username,
+            email=user_entity.email,
+            password_hash=user_entity.password_hash,
+            thelefone_number=user_entity.thelefone_number,
+            is_active=user_entity.is_active,
+            is_verified=user_entity.is_verified,
+            last_login_at=user_entity.last_login_at,
+            created_at=created_at,
+            updated_at=updated_at,
         )
 
         self.db.add(user_orm)
@@ -50,30 +51,29 @@ class UserRepository(UserRepositoryInterface):
     def search_users(self, term: str) -> List[UserEntity]:
         like_term = f"%{term}%"
         filters = [
-            User.correo.ilike(like_term),
-            User.nombre_completo.ilike(like_term),
-            User.role.ilike(like_term),
+            User.username.ilike(like_term),
+            User.email.ilike(like_term),
         ]
 
         lowered = term.strip().lower()
         truthy = {"true", "1", "yes", "si", "on"}
         falsy = {"false", "0", "no", "off"}
         if lowered in truthy:
-            filters.append(User.activo.is_(True))
+            filters.append(User.is_active.is_(True))
         elif lowered in falsy:
-            filters.append(User.activo.is_(False))
+            filters.append(User.is_active.is_(False))
 
         records = self.db.query(User).filter(or_(*filters)).all()
         return [UserEntity.from_model(row) for row in records]
 
     def update_user_status(
-        self, user_id: int, activo: bool, actualizado_at: Optional[datetime] = None
+        self, user_id: int, is_active: bool, updated_at: Optional[datetime] = None
     ) -> Optional[UserEntity]:
         record = self.db.get(User, user_id)
         if not record:
             return None
-        record.activo = activo
-        record.actualizado_at = actualizado_at or datetime.now(timezone.utc)
+        record.is_active = is_active
+        record.updated_at = updated_at or datetime.now(timezone.utc)
         self.db.commit()
         self.db.refresh(record)
         return UserEntity.from_model(record)
@@ -81,32 +81,35 @@ class UserRepository(UserRepositoryInterface):
     def update_user(
         self,
         user_id: int,
-        correo: Optional[str] = None,
-        contrasena_hash: Optional[str] = None,
-        role: Optional[str] = None,
-        activo: Optional[bool] = None,
-        nombre_completo: Optional[str] = None,
-        numero_contacto: Optional[str] = None,
-        actualizado_at: Optional[datetime] = None,
+        username: Optional[str] = None,
+        email: Optional[str] = None,
+        password_hash: Optional[str] = None,
+        thelefone_number: Optional[str] = None,
+        is_active: Optional[bool] = None,
+        is_verified: Optional[bool] = None,
+        last_login_at: Optional[datetime] = None,
+        updated_at: Optional[datetime] = None,
     ) -> Optional[UserEntity]:
         record = self.db.get(User, user_id)
         if not record:
             return None
 
-        if correo is not None:
-            record.correo = correo
-        if contrasena_hash is not None:
-            record.contrasena_hash = contrasena_hash
-        if role is not None:
-            record.role = role
-        if activo is not None:
-            record.activo = activo
-        if nombre_completo is not None:
-            record.nombre_completo = nombre_completo
-        if numero_contacto is not None:
-            record.numero_contacto = numero_contacto
+        if username is not None:
+            record.username = username
+        if email is not None:
+            record.email = email
+        if password_hash is not None:
+            record.password_hash = password_hash
+        if thelefone_number is not None:
+            record.thelefone_number = thelefone_number
+        if is_active is not None:
+            record.is_active = is_active
+        if is_verified is not None:
+            record.is_verified = is_verified
+        if last_login_at is not None:
+            record.last_login_at = last_login_at
 
-        record.actualizado_at = actualizado_at or datetime.now(timezone.utc)
+        record.updated_at = updated_at or datetime.now(timezone.utc)
         self.db.commit()
         self.db.refresh(record)
         return UserEntity.from_model(record)

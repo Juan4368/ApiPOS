@@ -62,21 +62,22 @@ class TipoMovimiento(Base):
 class User(Base):
     __tablename__ = 'user'
     __table_args__ = (
-        PrimaryKeyConstraint('user_id', name='user_pkey'),
-        Index('ix_user_correo', 'correo', unique=True),
-        Index('ix_user_full_name', 'nombre_completo'),
-        Index('ix_user_user_id', 'user_id')
+        PrimaryKeyConstraint('id', name='user_pkey'),
+        Index('ix_user_username', 'username', unique=True),
+        Index('ix_user_email', 'email', unique=True),
+        Index('ix_user_id', 'id')
     )
 
-    user_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    correo: Mapped[str] = mapped_column(String(255), nullable=False)
-    contrasena_hash: Mapped[str] = mapped_column(String(255), nullable=False)
-    role: Mapped[str] = mapped_column(Enum('administrador', 'vendedor', name='user_role'), nullable=False)
-    activo: Mapped[bool] = mapped_column(Boolean, nullable=False)
-    creado_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False)
-    actualizado_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False)
-    nombre_completo: Mapped[Optional[str]] = mapped_column(String(150))
-    numero_contacto: Mapped[Optional[str]] = mapped_column(String(50))
+    user_id: Mapped[int] = mapped_column("id", Integer, primary_key=True)
+    username: Mapped[str] = mapped_column(String(50), nullable=False)
+    email: Mapped[Optional[str]] = mapped_column(String(254))
+    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    is_verified: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    last_login_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False)
+    updated_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False)
+    thelefone_number: Mapped[str] = mapped_column(String(255), nullable=False)
 
     categoria: Mapped[list['Categoria']] = relationship('Categoria', foreign_keys='[Categoria.actualizado_por_id]', back_populates='actualizado_por')
     categoria_: Mapped[list['Categoria']] = relationship('Categoria', foreign_keys='[Categoria.creado_por_id]', back_populates='creado_por')
@@ -103,6 +104,8 @@ class Cliente(Base):
     telefono: Mapped[Optional[str]] = mapped_column(String(100))
     email: Mapped[Optional[str]] = mapped_column(String(255))
     created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False, default=datetime.datetime.utcnow)
+    descuento_pesos: Mapped[Optional[decimal.Decimal]] = mapped_column(Numeric(12, 2))
+    descuento_porcentaje: Mapped[Optional[decimal.Decimal]] = mapped_column(Numeric(5, 2))
 
 
 class Cartera(Base):
@@ -128,8 +131,8 @@ class Cartera(Base):
 class Categoria(Base):
     __tablename__ = 'categoria'
     __table_args__ = (
-        ForeignKeyConstraint(['actualizado_por_id'], ['user.user_id'], ondelete='SET NULL', name='categoria_actualizado_por_id_fkey'),
-        ForeignKeyConstraint(['creado_por_id'], ['user.user_id'], ondelete='SET NULL', name='categoria_creado_por_id_fkey'),
+        ForeignKeyConstraint(['actualizado_por_id'], ['user.id'], ondelete='SET NULL', name='categoria_actualizado_por_id_fkey'),
+        ForeignKeyConstraint(['creado_por_id'], ['user.id'], ondelete='SET NULL', name='categoria_creado_por_id_fkey'),
         PrimaryKeyConstraint('categoria_id', name='categoria_pkey'),
         UniqueConstraint('nombre', name='categoria_nombre_key'),
         Index('ix_categoria_categoria_id', 'categoria_id')
@@ -198,9 +201,9 @@ class Egreso(Base):
 class Product(Base):
     __tablename__ = 'product'
     __table_args__ = (
-        ForeignKeyConstraint(['actualizado_por_id'], ['user.user_id'], ondelete='SET NULL', name='product_actualizado_por_id_fkey'),
+        ForeignKeyConstraint(['actualizado_por_id'], ['user.id'], ondelete='SET NULL', name='product_actualizado_por_id_fkey'),
         ForeignKeyConstraint(['categoria_id'], ['categoria.categoria_id'], ondelete='SET NULL', name='product_categoria_id_fkey'),
-        ForeignKeyConstraint(['creado_por_id'], ['user.user_id'], ondelete='SET NULL', name='product_creado_por_id_fkey'),
+        ForeignKeyConstraint(['creado_por_id'], ['user.id'], ondelete='SET NULL', name='product_creado_por_id_fkey'),
         PrimaryKeyConstraint('producto_id', name='product_pkey'),
         Index('ix_product_codigo_barras', 'codigo_barras', unique=True),
         Index('ix_product_producto_id', 'producto_id')
@@ -234,7 +237,7 @@ class Venta(Base):
     __table_args__ = (
         CheckConstraint('total >= 0::numeric', name='ck_venta_total_no_negativo'),
         ForeignKeyConstraint(['cliente_id'], ['clientes.id'], ondelete='SET NULL', name='venta_cliente_id_fkey'),
-        ForeignKeyConstraint(['user_id'], ['user.user_id'], ondelete='SET NULL', name='venta_user_id_fkey'),
+        ForeignKeyConstraint(['user_id'], ['user.id'], ondelete='SET NULL', name='venta_user_id_fkey'),
         PrimaryKeyConstraint('venta_id', name='venta_pkey'),
         UniqueConstraint('numero_factura', name='venta_numero_factura_key'),
         Index('ix_venta_fecha', 'fecha'),
@@ -288,8 +291,8 @@ class VentaDetalle(Base):
 class Stock(Base):
     __tablename__ = 'stock'
     __table_args__ = (
-        ForeignKeyConstraint(['actualizado_por_id'], ['user.user_id'], ondelete='SET NULL', name='stock_actualizado_por_id_fkey'),
-        ForeignKeyConstraint(['creado_por_id'], ['user.user_id'], ondelete='SET NULL', name='stock_creado_por_id_fkey'),
+        ForeignKeyConstraint(['actualizado_por_id'], ['user.id'], ondelete='SET NULL', name='stock_actualizado_por_id_fkey'),
+        ForeignKeyConstraint(['creado_por_id'], ['user.id'], ondelete='SET NULL', name='stock_creado_por_id_fkey'),
         ForeignKeyConstraint(['producto_id'], ['product.producto_id'], ondelete='CASCADE', name='stock_producto_id_fkey'),
         PrimaryKeyConstraint('stock_id', name='stock_pkey'),
         Index('ix_stock_stock_id', 'stock_id')
@@ -314,7 +317,7 @@ class MovimientosStock(Base):
     __table_args__ = (
         CheckConstraint('cantidad > 0', name='ck_mov_cantidad_pos'),
         ForeignKeyConstraint(['producto_id'], ['product.producto_id'], ondelete='CASCADE', name='movimientos_stock_producto_id_fkey'),
-        ForeignKeyConstraint(['realizado_por_id'], ['user.user_id'], ondelete='SET NULL', name='movimientos_stock_realizado_por_id_fkey'),
+        ForeignKeyConstraint(['realizado_por_id'], ['user.id'], ondelete='SET NULL', name='movimientos_stock_realizado_por_id_fkey'),
         ForeignKeyConstraint(['ref_movimiento_id'], ['ref_movimiento.ref_movimiento_id'], name='movimientos_stock_ref_movimiento_id_fkey'),
         ForeignKeyConstraint(['stock_id'], ['stock.stock_id'], ondelete='CASCADE', name='movimientos_stock_stock_id_fkey'),
         ForeignKeyConstraint(['tipo_movimiento_id'], ['tipo_movimiento.tipo_movimiento_id'], name='movimientos_stock_tipo_movimiento_id_fkey'),
@@ -405,7 +408,7 @@ class MovimientoFinanciero(Base):
             name='ck_movimientos_financieros_proveedor_tipo'
         ),
         ForeignKeyConstraint(['caja_id'], ['cajas.id'], ondelete='RESTRICT', name='movimientos_financieros_caja_id_fkey'),
-        ForeignKeyConstraint(['usuario_id'], ['user.user_id'], ondelete='SET NULL', name='movimientos_financieros_usuario_id_fkey'),
+        ForeignKeyConstraint(['usuario_id'], ['user.id'], ondelete='SET NULL', name='movimientos_financieros_usuario_id_fkey'),
         ForeignKeyConstraint(['venta_id'], ['venta.venta_id'], ondelete='SET NULL', name='movimientos_financieros_venta_id_fkey'),
         ForeignKeyConstraint(['proveedor_id'], ['proveedores.id'], ondelete='SET NULL', name='movimientos_financieros_proveedor_id_fkey'),
         PrimaryKeyConstraint('id', name='movimientos_financieros_pkey'),

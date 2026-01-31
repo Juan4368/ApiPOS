@@ -21,14 +21,15 @@ class UserService(IUserService):
 
     def create_user(self, data: UserRequest) -> UserResponse:
         entity = UserEntity(
-            correo=data.correo,
-            contrasena_hash=data.contrasena_hash,
-            role=data.role,
-            activo=data.activo,
-            nombre_completo=data.nombre_completo,
-            numero_contacto=data.numero_contacto,
-            creado_at=data.creado_at,
-            actualizado_at=data.actualizado_at,
+            username=data.username,
+            email=data.email,
+            password_hash=data.password_hash,
+            thelefone_number=data.thelefone_number,
+            is_active=data.is_active,
+            is_verified=data.is_verified,
+            last_login_at=data.last_login_at,
+            created_at=data.created_at,
+            updated_at=data.updated_at,
         )
         created = self.repository.create_user(entity)
         return UserResponse.model_validate(created)
@@ -50,7 +51,7 @@ class UserService(IUserService):
     def update_user_status(
         self, user_id: int, data: UserStatusRequest
     ) -> Optional[UserResponse]:
-        updated = self.repository.update_user_status(user_id, data.activo, data.actualizado_at)
+        updated = self.repository.update_user_status(user_id, data.is_active, data.updated_at)
         if not updated:
             return None
         return UserResponse.model_validate(updated)
@@ -58,13 +59,14 @@ class UserService(IUserService):
     def update_user(self, user_id: int, data: UserUpdateRequest) -> Optional[UserResponse]:
         updated = self.repository.update_user(
             user_id=user_id,
-            correo=data.correo,
-            contrasena_hash=data.contrasena_hash,
-            role=data.role,
-            activo=data.activo,
-            nombre_completo=data.nombre_completo,
-            numero_contacto=data.numero_contacto,
-            actualizado_at=data.actualizado_at,
+            username=data.username,
+            email=data.email,
+            password_hash=data.password_hash,
+            thelefone_number=data.thelefone_number,
+            is_active=data.is_active,
+            is_verified=data.is_verified,
+            last_login_at=data.last_login_at,
+            updated_at=data.updated_at,
         )
         if not updated:
             return None

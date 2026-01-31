@@ -12,36 +12,30 @@ class UserEntity(BaseModel):
     """
 
     user_id: Optional[int] = None
-    correo: str = Field(..., min_length=1)
-    contrasena_hash: str = Field(..., min_length=1)
-    role: str = Field(..., min_length=1)
-    activo: bool = True
-    creado_at: Optional[datetime] = None
-    actualizado_at: Optional[datetime] = None
-    nombre_completo: Optional[str] = None
-    numero_contacto: Optional[str] = None
+    username: str = Field(..., min_length=1)
+    email: Optional[str] = None
+    password_hash: str = Field(..., min_length=1)
+    thelefone_number: str = Field(..., min_length=1)
+    is_active: bool = True
+    is_verified: bool = False
+    last_login_at: Optional[datetime] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
     model_config = ConfigDict(
         from_attributes=True,
         validate_assignment=True,
     )
 
-    @field_validator("correo", "contrasena_hash", "role", mode="before")
+    @field_validator("username", "password_hash", "thelefone_number", mode="before")
     def _strip_required(cls, v: Optional[str]) -> str:
         value = (v or "").strip()
         if not value:
             raise ValueError("Campo requerido")
         return value
 
-    @field_validator("nombre_completo", mode="before")
-    def _strip_nombre(cls, v: Optional[str]) -> Optional[str]:
-        if v is None:
-            return None
-        value = str(v).strip()
-        return value or None
-
-    @field_validator("numero_contacto", mode="before")
-    def _strip_contacto(cls, v: Optional[str]) -> Optional[str]:
+    @field_validator("email", mode="before")
+    def _strip_email(cls, v: Optional[str]) -> Optional[str]:
         if v is None:
             return None
         value = str(v).strip()

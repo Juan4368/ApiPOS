@@ -11,14 +11,15 @@ class UserRequest(BaseModel):
     DTO para manejar las solicitudes relacionadas con usuarios (crear/actualizar).
     """
 
-    correo: str = Field(..., min_length=1, max_length=255)
-    contrasena_hash: str = Field(..., min_length=1, max_length=255)
-    role: str = Field(..., min_length=1)
-    activo: bool = True
-    nombre_completo: Optional[str] = Field(None, max_length=150)
-    numero_contacto: Optional[str] = Field(None, max_length=50)
-    creado_at: Optional[datetime] = None
-    actualizado_at: Optional[datetime] = None
+    username: str = Field(..., min_length=1, max_length=50)
+    email: Optional[str] = Field(None, max_length=254)
+    password_hash: str = Field(..., min_length=1, max_length=255)
+    thelefone_number: str = Field(..., min_length=1, max_length=255)
+    is_active: bool = True
+    is_verified: bool = False
+    last_login_at: Optional[datetime] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
 
 class UserResponse(BaseModel):
@@ -27,13 +28,14 @@ class UserResponse(BaseModel):
     """
 
     user_id: int
-    correo: str
-    role: str
-    activo: bool
-    nombre_completo: Optional[str]
-    numero_contacto: Optional[str]
-    creado_at: Optional[datetime]
-    actualizado_at: Optional[datetime]
+    username: str
+    email: Optional[str]
+    thelefone_number: str
+    is_active: bool
+    is_verified: bool
+    last_login_at: Optional[datetime]
+    created_at: Optional[datetime]
+    updated_at: Optional[datetime]
 
     model_config = {"from_attributes": True}
 
@@ -43,8 +45,8 @@ class UserStatusRequest(BaseModel):
     DTO para actualizar el estado del usuario.
     """
 
-    activo: bool
-    actualizado_at: Optional[datetime] = None
+    is_active: bool
+    updated_at: Optional[datetime] = None
 
 
 class UserUpdateRequest(BaseModel):
@@ -52,10 +54,11 @@ class UserUpdateRequest(BaseModel):
     DTO para actualizar datos del usuario.
     """
 
-    correo: Optional[str] = Field(None, min_length=1, max_length=255)
-    contrasena_hash: Optional[str] = Field(None, min_length=1, max_length=255)
-    role: Optional[str] = Field(None, min_length=1)
-    activo: Optional[bool] = None
-    nombre_completo: Optional[str] = Field(None, max_length=150)
-    numero_contacto: Optional[str] = Field(None, max_length=50)
-    actualizado_at: Optional[datetime] = None
+    username: Optional[str] = Field(None, min_length=1, max_length=50)
+    email: Optional[str] = Field(None, max_length=254)
+    password_hash: Optional[str] = Field(None, min_length=1, max_length=255)
+    thelefone_number: Optional[str] = Field(None, min_length=1, max_length=255)
+    is_active: Optional[bool] = None
+    is_verified: Optional[bool] = None
+    last_login_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None

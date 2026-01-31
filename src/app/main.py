@@ -37,7 +37,7 @@ from src.app.controller.stock_controller import router as stock_router
 from src.app.controller.user_controller import router as user_router
 from src.app.controller.venta_controller import router as venta_router
 
-DOCS_URL = "http://127.0.0.1:8001/docs"
+DOCS_URL = "http://127.0.0.1:8000/docs"
 BROWSER_CANDIDATES = [
     "C://Program Files//Google//Chrome//Application//chrome.exe",
     "C://Program Files (x86)//Google//Chrome//Application//chrome.exe",
@@ -66,7 +66,7 @@ def create_app() -> FastAPI:
 
     app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://3.15.163.214:8000"],
+    allow_origins=["http://localhost:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

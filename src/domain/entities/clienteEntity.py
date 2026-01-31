@@ -19,6 +19,8 @@ class ClienteEntity(BaseModel):
     telefono: Optional[str] = None
     email: Optional[str] = None
     created_at: Optional[datetime] = None
+    descuento_pesos: Optional[float] = None
+    descuento_porcentaje: Optional[float] = None
 
     model_config = ConfigDict(
         from_attributes=True,

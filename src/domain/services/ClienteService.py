@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import List, Optional
 from uuid import UUID
 
-from domain.dtos.clienteDto import ClienteRequest, ClienteResponse
+from domain.dtos.clienteDto import ClienteRequest, ClienteResponse, ClienteUpdateRequest
 from domain.entities.clienteEntity import ClienteEntity
 from domain.interfaces.cliente_repository_interface import ClienteRepositoryInterface
 from domain.interfaces.IClientService import IClientService
@@ -18,15 +18,18 @@ class ClienteService(IClientService):
         self.repository = repository
 
     def create_cliente(self, data: ClienteRequest) -> ClienteResponse:
-        normalized = _normalizar_nombre(data.nombre)
+        normalized = data.nombre_normalizado or _normalizar_nombre(data.nombre)
         existing = self.repository.get_by_nombre_normalizado(normalized)
         if existing:
             raise ValueError("El cliente ya existe")
 
         entity = ClienteEntity(
             nombre=data.nombre,
+            nombre_normalizado=normalized,
             telefono=data.telefono,
             email=data.email,
+            descuento_pesos=data.descuento_pesos,
+            descuento_porcentaje=data.descuento_porcentaje,
         )
         created = self.repository.create_cliente(entity, nombre_normalizado=normalized)
         return ClienteResponse.model_validate(created)
@@ -54,3 +57,40 @@ class ClienteService(IClientService):
         if not cliente:
             return None
         return ClienteResponse.model_validate(cliente)
+
+    def update_cliente(self, cliente_id: UUID, data: ClienteRequest) -> Optional[ClienteResponse]:
+        normalized = data.nombre_normalizado or _normalizar_nombre(data.nombre)
+        updated = self.repository.update_cliente(
+            cliente_id=cliente_id,
+            nombre=data.nombre,
+            nombre_normalizado=normalized,
+            telefono=data.telefono,
+            email=data.email,
+            descuento_pesos=data.descuento_pesos,
+            descuento_porcentaje=data.descuento_porcentaje,
+        )
+        if not updated:
+            return None
+        return ClienteResponse.model_validate(updated)
+
+    def patch_cliente(
+        self, cliente_id: UUID, data: ClienteUpdateRequest
+    ) -> Optional[ClienteResponse]:
+        normalized = None
+        if data.nombre_normalizado:
+            normalized = data.nombre_normalizado
+        elif data.nombre is not None:
+            normalized = _normalizar_nombre(data.nombre)
+
+        updated = self.repository.update_cliente(
+            cliente_id=cliente_id,
+            nombre=data.nombre,
+            nombre_normalizado=normalized,
+            telefono=data.telefono,
+            email=data.email,
+            descuento_pesos=data.descuento_pesos,
+            descuento_porcentaje=data.descuento_porcentaje,
+        )
+        if not updated:
+            return None
+        return ClienteResponse.model_validate(updated)

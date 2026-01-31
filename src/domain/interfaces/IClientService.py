@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from typing import List, Optional
 from uuid import UUID
 
-from domain.dtos.clienteDto import ClienteRequest, ClienteResponse
+from domain.dtos.clienteDto import ClienteRequest, ClienteResponse, ClienteUpdateRequest
 
 
 class IClientService(ABC):
@@ -26,4 +26,14 @@ class IClientService(ABC):
 
     @abstractmethod
     def get_by_nombre_normalizado(self, nombre_normalizado: str) -> Optional[ClienteResponse]:
+        ...
+
+    @abstractmethod
+    def update_cliente(self, cliente_id: UUID, data: ClienteRequest) -> Optional[ClienteResponse]:
+        ...
+
+    @abstractmethod
+    def patch_cliente(
+        self, cliente_id: UUID, data: ClienteUpdateRequest
+    ) -> Optional[ClienteResponse]:
         ...

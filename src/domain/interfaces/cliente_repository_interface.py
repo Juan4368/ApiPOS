@@ -29,3 +29,16 @@ class ClienteRepositoryInterface(ABC):
     @abstractmethod
     def search_clientes(self, term: str) -> List[ClienteEntity]:
         ...
+
+    @abstractmethod
+    def update_cliente(
+        self,
+        cliente_id: UUID,
+        nombre: Optional[str] = None,
+        nombre_normalizado: Optional[str] = None,
+        telefono: Optional[str] = None,
+        email: Optional[str] = None,
+        descuento_pesos: Optional[float] = None,
+        descuento_porcentaje: Optional[float] = None,
+    ) -> Optional[ClienteEntity]:
+        ...

@@ -116,9 +116,9 @@ class CategoryRepository(CategoryRepositoryInterface):
     def _to_entity(self, record: Categoria) -> CategoryEntity:
         entity = CategoryEntity.from_model(record)
         entity.creado_por_nombre = (
-            record.creado_por.nombre_completo if record.creado_por else None
+            record.creado_por.username if record.creado_por else None
         )
         entity.actualizado_por_nombre = (
-            record.actualizado_por.nombre_completo if record.actualizado_por else None
+            record.actualizado_por.username if record.actualizado_por else None
         )
         return entity
