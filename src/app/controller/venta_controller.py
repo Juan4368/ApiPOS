@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -8,6 +9,8 @@ from src.domain.dtos.genericResponseDto import CreationResponse
 from src.domain.dtos.ventaDto import (
     VentaRequest,
     VentaResponse,
+    VentaDetallesUpdateRequest,
+    VentaResumenResponse,
     VentaStatusRequest,
     VentaUpdateRequest,
 )
@@ -48,6 +51,15 @@ def list_ventas(service: ServiceDep) -> list[VentaResponse]:
     return service.list_ventas()
 
 
+@router.get("/resumen", response_model=list[VentaResumenResponse])
+def list_ventas_resumen(
+    service: ServiceDep,
+    desde: date | None = None,
+    hasta: date | None = None,
+) -> list[VentaResumenResponse]:
+    return service.list_ventas_resumen(desde=desde, hasta=hasta)
+
+
 @router.get("/buscar", response_model=list[VentaResponse])
 def search_ventas(q: str, service: ServiceDep) -> list[VentaResponse]:
     if not q.strip():
@@ -76,6 +88,36 @@ def update_venta_status(
     service: ServiceDep,
 ) -> VentaResponse:
     venta = service.update_venta_status(venta_id, payload)
+    if not venta:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Venta no encontrada",
+        )
+    return venta
+
+
+@router.patch("/{venta_id}/detalles", response_model=VentaResponse)
+def update_venta_detalles(
+    venta_id: int,
+    payload: VentaDetallesUpdateRequest,
+    service: ServiceDep,
+) -> VentaResponse:
+    venta = service.update_venta_detalles(venta_id, payload)
+    if not venta:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Venta no encontrada",
+        )
+    return venta
+
+
+@router.delete("/{venta_id}/detalles/{producto_id}", response_model=VentaResponse)
+def delete_venta_detalle(
+    venta_id: int,
+    producto_id: int,
+    service: ServiceDep,
+) -> VentaResponse:
+    venta = service.delete_venta_detalle(venta_id, producto_id)
     if not venta:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

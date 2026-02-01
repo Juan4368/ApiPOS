@@ -36,6 +36,7 @@ class MovimientoFinancieroService:
             tipo=data.tipo,
             monto=data.monto,
             concepto=data.concepto,
+            nota=data.nota,
             proveedor_id=self._normalize_proveedor_id(data.tipo, data.proveedor_id),
             caja_id=data.caja_id,
             usuario_id=data.usuario_id,
@@ -83,6 +84,7 @@ class MovimientoFinancieroService:
             tipo=data.tipo,
             monto=data.monto,
             concepto=data.concepto,
+            nota=data.nota,
             proveedor_id=self._normalize_proveedor_id(data.tipo, data.proveedor_id),
             caja_id=data.caja_id,
             usuario_id=data.usuario_id,
@@ -109,6 +111,7 @@ class MovimientoFinancieroService:
             tipo=next_tipo,
             monto=data.monto if data.monto is not None else current.monto,
             concepto=data.concepto if data.concepto is not None else current.concepto,
+            nota=data.nota if data.nota is not None else current.nota,
             proveedor_id=self._normalize_proveedor_id(next_tipo, next_proveedor_id),
             caja_id=data.caja_id if data.caja_id is not None else current.caja_id,
             usuario_id=(

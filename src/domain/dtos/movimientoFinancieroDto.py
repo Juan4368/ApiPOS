@@ -14,6 +14,7 @@ class MovimientoFinancieroRequest(BaseModel):
     tipo: CategoriaTipo
     monto: Decimal = Field(..., gt=Decimal("0.00"))
     concepto: str
+    nota: Optional[str] = None
     proveedor_id: Optional[int] = None
     caja_id: int
     usuario_id: Optional[int] = None
@@ -26,6 +27,7 @@ class MovimientoFinancieroResponse(BaseModel):
     tipo: CategoriaTipo
     monto: Decimal
     concepto: str
+    nota: Optional[str] = None
     proveedor_id: Optional[int] = None
     caja_id: int
     usuario_id: Optional[int] = None
@@ -40,6 +42,7 @@ class MovimientoFinancieroUpdateRequest(BaseModel):
     tipo: Optional[CategoriaTipo] = None
     monto: Optional[Decimal] = Field(default=None, gt=Decimal("0.00"))
     concepto: Optional[str] = None
+    nota: Optional[str] = None
     proveedor_id: Optional[int] = None
     caja_id: Optional[int] = None
     usuario_id: Optional[int] = None

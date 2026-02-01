@@ -19,6 +19,7 @@ for path in (PROJECT_ROOT, SRC_DIR):
 from src.app.controller.category_controller import router as category_router
 from src.app.controller.cartera_controller import router as cartera_router
 from src.app.controller.caja_controller import router as caja_router
+from src.app.controller.cajas_cerveza_controller import router as cajas_cerveza_router
 from src.app.controller.cliente_controller import router as cliente_router
 from src.app.controller.contabilidad_categoria_controller import (
     router as contabilidad_categoria_router,
@@ -75,6 +76,7 @@ def create_app() -> FastAPI:
     app.include_router(category_router)
     app.include_router(cartera_router)
     app.include_router(caja_router)
+    app.include_router(cajas_cerveza_router)
     app.include_router(cliente_router)
     app.include_router(contabilidad_categoria_router)
     app.include_router(cuenta_cobrar_router)

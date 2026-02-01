@@ -287,6 +287,12 @@ class VentaDetalle(Base):
     venta: Mapped['Venta'] = relationship('Venta', back_populates='detalles')
     producto: Mapped['Product'] = relationship('Product', back_populates='ventas_detalle')
 
+    @property
+    def producto_nombre(self) -> Optional[str]:
+        if self.producto is None:
+            return None
+        return self.producto.nombre
+
 
 class Stock(Base):
     __tablename__ = 'stock'
@@ -360,6 +366,22 @@ class Caja(Base):
     cierres_caja: Mapped[list['CierreCaja']] = relationship('CierreCaja', back_populates='caja')
 
 
+class CajasCerveza(Base):
+    __tablename__ = 'cajas_cerveza'
+    __table_args__ = (
+        PrimaryKeyConstraint('id', name='cajas_cerveza_pkey'),
+        Index('ix_cajas_cerveza_id', 'id'),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, Identity(start=1, increment=1, minvalue=1, maxvalue=2147483647, cycle=False, cache=1), primary_key=True)
+    nombre: Mapped[str] = mapped_column(String(150), nullable=False)
+    cantidad_cajas: Mapped[int] = mapped_column(Integer, nullable=False)
+    entregado: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    fecha: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False, default=datetime.datetime.utcnow)
+    cajero: Mapped[Optional[str]] = mapped_column(String(150))
+    actualizado_por: Mapped[Optional[str]] = mapped_column(String(150))
+
+
 class Proveedor(Base):
     __tablename__ = 'proveedores'
     __table_args__ = (
@@ -431,6 +453,7 @@ class MovimientoFinanciero(Base):
     tipo: Mapped[str] = mapped_column(Enum('INGRESO', 'EGRESO', name='tipo_movimiento_financiero_enum'), nullable=False)
     monto: Mapped[decimal.Decimal] = mapped_column(Numeric(14, 2), nullable=False)
     concepto: Mapped[str] = mapped_column(Text, nullable=False)
+    nota: Mapped[Optional[str]] = mapped_column(String(255))
     usuario_id: Mapped[Optional[int]] = mapped_column(Integer)
     venta_id: Mapped[Optional[int]] = mapped_column(Integer)
     proveedor_id: Mapped[Optional[int]] = mapped_column(Integer)

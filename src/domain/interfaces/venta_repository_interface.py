@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from datetime import date
 from typing import List, Optional
 
 from domain.entities.ventaDetalleEntity import VentaDetalleEntity
 from domain.entities.ventaEntity import VentaEntity
+from domain.dtos.ventaDto import VentaResumenResponse
 
 
 class VentaRepositoryInterface(ABC):
@@ -12,7 +14,10 @@ class VentaRepositoryInterface(ABC):
 
     @abstractmethod
     def create_venta(
-        self, venta_entity: VentaEntity, detalles: List[VentaDetalleEntity]
+        self,
+        venta_entity: VentaEntity,
+        detalles: List[VentaDetalleEntity],
+        stock_deltas: Optional[dict[int, int]] = None,
     ) -> VentaEntity:
         """Persiste una venta y sus detalles."""
         raise NotImplementedError
@@ -20,6 +25,21 @@ class VentaRepositoryInterface(ABC):
     @abstractmethod
     def list_ventas(self) -> List[VentaEntity]:
         """Devuelve todas las ventas."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def list_ventas_resumen(
+        self,
+        *,
+        desde: Optional[date] = None,
+        hasta: Optional[date] = None,
+    ) -> List[VentaResumenResponse]:
+        """Devuelve un resumen de ventas para la vista."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_stock_cantidades(self, producto_ids: list[int]) -> dict[int, int]:
+        """Devuelve cantidades de stock por producto_id."""
         raise NotImplementedError
 
     @abstractmethod
@@ -42,6 +62,7 @@ class VentaRepositoryInterface(ABC):
         self,
         venta_entity: VentaEntity,
         detalles: Optional[List[VentaDetalleEntity]] = None,
+        stock_deltas: Optional[dict[int, int]] = None,
     ) -> Optional[VentaEntity]:
         """Actualiza una venta y, si aplica, sus detalles."""
         raise NotImplementedError

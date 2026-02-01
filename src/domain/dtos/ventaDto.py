@@ -66,6 +66,19 @@ class VentaResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class VentaResumenResponse(BaseModel):
+    fecha: datetime
+    numero_factura: Optional[str]
+    cliente_nombre: Optional[str]
+    subtotal: Decimal
+    descuento: Decimal
+    total: Decimal
+    tipo_pago: Optional[str] = None
+    es_credito: bool = False
+    nota_venta: Optional[str]
+    usuario_nombre: Optional[str]
+
+
 class VentaStatusRequest(BaseModel):
     """
     DTO para actualizar el estado de una venta.
@@ -90,3 +103,11 @@ class VentaUpdateRequest(BaseModel):
     cliente_id: Optional[UUID] = None
     user_id: Optional[int] = None
     detalles: Optional[list[VentaDetalleRequest]] = None
+
+
+class VentaDetallesUpdateRequest(BaseModel):
+    """
+    DTO para actualizar solo los detalles de una venta.
+    """
+
+    detalles: list[VentaDetalleRequest] = Field(default_factory=list)

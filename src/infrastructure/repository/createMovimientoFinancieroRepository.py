@@ -25,6 +25,7 @@ class MovimientoFinancieroRepository(MovimientoFinancieroRepositoryInterface):
             tipo=self._to_tipo_movimiento(entity.tipo),
             monto=entity.monto,
             concepto=entity.concepto,
+            nota=entity.nota,
             proveedor_id=entity.proveedor_id,
             caja_id=entity.caja_id,
             usuario_id=entity.usuario_id,
@@ -86,6 +87,7 @@ class MovimientoFinancieroRepository(MovimientoFinancieroRepositoryInterface):
         record.tipo = self._to_tipo_movimiento(entity.tipo)
         record.monto = entity.monto
         record.concepto = entity.concepto
+        record.nota = entity.nota
         record.proveedor_id = entity.proveedor_id
         record.caja_id = entity.caja_id
         record.usuario_id = entity.usuario_id
@@ -106,6 +108,7 @@ class MovimientoFinancieroRepository(MovimientoFinancieroRepositoryInterface):
             tipo=CategoriaTipo(record.tipo),
             monto=record.monto,
             concepto=record.concepto,
+            nota=record.nota,
             proveedor_id=record.proveedor_id,
             caja_id=record.caja_id,
             usuario_id=record.usuario_id,

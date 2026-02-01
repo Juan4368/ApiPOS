@@ -6,6 +6,7 @@ from typing import List, Optional
 from domain.dtos.ventaDto import (
     VentaRequest,
     VentaResponse,
+    VentaDetallesUpdateRequest,
     VentaStatusRequest,
     VentaUpdateRequest,
 )
@@ -37,5 +38,17 @@ class IVentaService(ABC):
     @abstractmethod
     def update_venta(
         self, venta_id: int, data: VentaUpdateRequest
+    ) -> Optional[VentaResponse]:
+        ...
+
+    @abstractmethod
+    def update_venta_detalles(
+        self, venta_id: int, data: VentaDetallesUpdateRequest
+    ) -> Optional[VentaResponse]:
+        ...
+
+    @abstractmethod
+    def delete_venta_detalle(
+        self, venta_id: int, producto_id: int
     ) -> Optional[VentaResponse]:
         ...
