@@ -44,7 +44,7 @@ class UserRepositoryInterface(ABC):
         username: Optional[str] = None,
         email: Optional[str] = None,
         password_hash: Optional[str] = None,
-        thelefone_number: Optional[str] = None,
+        telephone_number: Optional[str] = None,
         is_active: Optional[bool] = None,
         is_verified: Optional[bool] = None,
         last_login_at: Optional[datetime] = None,

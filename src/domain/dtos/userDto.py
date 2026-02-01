@@ -14,7 +14,7 @@ class UserRequest(BaseModel):
     username: str = Field(..., min_length=1, max_length=50)
     email: Optional[str] = Field(None, max_length=254)
     password_hash: str = Field(..., min_length=1, max_length=255)
-    thelefone_number: str = Field(..., min_length=1, max_length=255)
+    telephone_number: Optional[str] = Field(None, min_length=1, max_length=255)
     is_active: bool = True
     is_verified: bool = False
     last_login_at: Optional[datetime] = None
@@ -30,7 +30,7 @@ class UserResponse(BaseModel):
     user_id: int
     username: str
     email: Optional[str]
-    thelefone_number: str
+    telephone_number: Optional[str]
     is_active: bool
     is_verified: bool
     last_login_at: Optional[datetime]
@@ -57,7 +57,7 @@ class UserUpdateRequest(BaseModel):
     username: Optional[str] = Field(None, min_length=1, max_length=50)
     email: Optional[str] = Field(None, max_length=254)
     password_hash: Optional[str] = Field(None, min_length=1, max_length=255)
-    thelefone_number: Optional[str] = Field(None, min_length=1, max_length=255)
+    telephone_number: Optional[str] = Field(None, min_length=1, max_length=255)
     is_active: Optional[bool] = None
     is_verified: Optional[bool] = None
     last_login_at: Optional[datetime] = None

@@ -1,4 +1,4 @@
-﻿from typing import Generic, TypeVar
+from typing import Generic, TypeVar
 from uuid import UUID
 
 from pydantic.generics import GenericModel

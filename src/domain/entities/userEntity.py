@@ -15,7 +15,7 @@ class UserEntity(BaseModel):
     username: str = Field(..., min_length=1)
     email: Optional[str] = None
     password_hash: str = Field(..., min_length=1)
-    thelefone_number: str = Field(..., min_length=1)
+    telephone_number: Optional[str] = Field(None, min_length=1)
     is_active: bool = True
     is_verified: bool = False
     last_login_at: Optional[datetime] = None
@@ -27,12 +27,19 @@ class UserEntity(BaseModel):
         validate_assignment=True,
     )
 
-    @field_validator("username", "password_hash", "thelefone_number", mode="before")
+    @field_validator("username", "password_hash", mode="before")
     def _strip_required(cls, v: Optional[str]) -> str:
         value = (v or "").strip()
         if not value:
             raise ValueError("Campo requerido")
         return value
+
+    @field_validator("telephone_number", mode="before")
+    def _strip_telephone(cls, v: Optional[str]) -> Optional[str]:
+        if v is None:
+            return None
+        value = str(v).strip()
+        return value or None
 
     @field_validator("email", mode="before")
     def _strip_email(cls, v: Optional[str]) -> Optional[str]:

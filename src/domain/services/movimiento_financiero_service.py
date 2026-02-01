@@ -19,6 +19,15 @@ class MovimientoFinancieroService:
     def __init__(self, repository: MovimientoFinancieroRepositoryInterface):
         self.repository = repository
 
+    def _normalize_proveedor_id(
+        self, tipo: CategoriaTipo, proveedor_id: Optional[int]
+    ) -> Optional[int]:
+        if proveedor_id in (None, 0):
+            return None
+        if tipo == CategoriaTipo.INGRESO:
+            return None
+        return proveedor_id
+
     def create_movimiento(
         self, data: MovimientoFinancieroRequest
     ) -> MovimientoFinancieroResponse:
@@ -27,7 +36,7 @@ class MovimientoFinancieroService:
             tipo=data.tipo,
             monto=data.monto,
             concepto=data.concepto,
-            proveedor_id=data.proveedor_id,
+            proveedor_id=self._normalize_proveedor_id(data.tipo, data.proveedor_id),
             caja_id=data.caja_id,
             usuario_id=data.usuario_id,
             venta_id=data.venta_id,
@@ -74,7 +83,7 @@ class MovimientoFinancieroService:
             tipo=data.tipo,
             monto=data.monto,
             concepto=data.concepto,
-            proveedor_id=data.proveedor_id,
+            proveedor_id=self._normalize_proveedor_id(data.tipo, data.proveedor_id),
             caja_id=data.caja_id,
             usuario_id=data.usuario_id,
             venta_id=data.venta_id,
@@ -90,15 +99,17 @@ class MovimientoFinancieroService:
         current = self.repository.get_movimiento(movimiento_id)
         if not current:
             return None
+        next_tipo = data.tipo if data.tipo is not None else current.tipo
+        next_proveedor_id = (
+            data.proveedor_id if data.proveedor_id is not None else current.proveedor_id
+        )
         entity = MovimientoFinancieroEntity(
             id=movimiento_id,
             fecha=data.fecha if data.fecha is not None else current.fecha,
-            tipo=data.tipo if data.tipo is not None else current.tipo,
+            tipo=next_tipo,
             monto=data.monto if data.monto is not None else current.monto,
             concepto=data.concepto if data.concepto is not None else current.concepto,
-            proveedor_id=(
-                data.proveedor_id if data.proveedor_id is not None else current.proveedor_id
-            ),
+            proveedor_id=self._normalize_proveedor_id(next_tipo, next_proveedor_id),
             caja_id=data.caja_id if data.caja_id is not None else current.caja_id,
             usuario_id=(
                 data.usuario_id if data.usuario_id is not None else current.usuario_id

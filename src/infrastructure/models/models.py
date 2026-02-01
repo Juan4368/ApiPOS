@@ -77,7 +77,7 @@ class User(Base):
     last_login_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
     created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False)
     updated_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False)
-    thelefone_number: Mapped[str] = mapped_column(String(255), nullable=False)
+    telephone_number: Mapped[Optional[str]] = mapped_column(String(255))
 
     categoria: Mapped[list['Categoria']] = relationship('Categoria', foreign_keys='[Categoria.actualizado_por_id]', back_populates='actualizado_por')
     categoria_: Mapped[list['Categoria']] = relationship('Categoria', foreign_keys='[Categoria.creado_por_id]', back_populates='creado_por')

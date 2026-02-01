@@ -25,7 +25,7 @@ class UserRepository(UserRepositoryInterface):
             username=user_entity.username,
             email=user_entity.email,
             password_hash=user_entity.password_hash,
-            thelefone_number=user_entity.thelefone_number,
+            telephone_number=user_entity.telephone_number,
             is_active=user_entity.is_active,
             is_verified=user_entity.is_verified,
             last_login_at=user_entity.last_login_at,
@@ -84,7 +84,7 @@ class UserRepository(UserRepositoryInterface):
         username: Optional[str] = None,
         email: Optional[str] = None,
         password_hash: Optional[str] = None,
-        thelefone_number: Optional[str] = None,
+        telephone_number: Optional[str] = None,
         is_active: Optional[bool] = None,
         is_verified: Optional[bool] = None,
         last_login_at: Optional[datetime] = None,
@@ -100,8 +100,8 @@ class UserRepository(UserRepositoryInterface):
             record.email = email
         if password_hash is not None:
             record.password_hash = password_hash
-        if thelefone_number is not None:
-            record.thelefone_number = thelefone_number
+        if telephone_number is not None:
+            record.telephone_number = telephone_number
         if is_active is not None:
             record.is_active = is_active
         if is_verified is not None:
