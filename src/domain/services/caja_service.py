@@ -15,6 +15,7 @@ class CajaService:
         entity = CajaEntity(
             nombre=data.nombre,
             saldo_inicial=data.saldo_inicial,
+            estado=data.estado,
         )
         created = self.repository.create_caja(entity)
         return CajaResponse.model_validate(created)
@@ -34,6 +35,7 @@ class CajaService:
             id=caja_id,
             nombre=data.nombre,
             saldo_inicial=data.saldo_inicial,
+            estado=data.estado,
         )
         updated = self.repository.update_caja(caja_id, entity)
         if not updated:
@@ -52,6 +54,7 @@ class CajaService:
             saldo_inicial=(
                 data.saldo_inicial if data.saldo_inicial is not None else current.saldo_inicial
             ),
+            estado=data.estado if data.estado is not None else current.estado,
             created_at=current.created_at,
         )
         updated = self.repository.update_caja(caja_id, entity)

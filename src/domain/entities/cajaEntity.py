@@ -6,11 +6,14 @@ from typing import Any, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from domain.enums.contabilidadEnums import CajaEstado
+
 
 class CajaEntity(BaseModel):
     id: Optional[int] = None
     nombre: str = Field(..., min_length=1)
     saldo_inicial: Decimal = Field(default=Decimal("0.00"), ge=Decimal("0.00"))
+    estado: CajaEstado = CajaEstado.ABIERTA
     created_at: Optional[datetime] = None
 
     model_config = ConfigDict(

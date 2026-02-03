@@ -360,6 +360,7 @@ class Caja(Base):
     id: Mapped[int] = mapped_column(Integer, Identity(start=1, increment=1, minvalue=1, maxvalue=2147483647, cycle=False, cache=1), primary_key=True)
     nombre: Mapped[str] = mapped_column(String(150), nullable=False)
     saldo_inicial: Mapped[decimal.Decimal] = mapped_column(Numeric(14, 2), nullable=False, default=decimal.Decimal('0.00'))
+    estado: Mapped[str] = mapped_column(Enum('ABIERTA', 'CERRADA', name='caja_estado_enum'), nullable=False, default='CERRADA')
     created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False, default=datetime.datetime.utcnow)
 
     movimientos_financieros: Mapped[list['MovimientoFinanciero']] = relationship('MovimientoFinanciero', back_populates='caja')

@@ -19,3 +19,8 @@ class CreditoEstado(str, Enum):
     PAGADO = "PAGADO"
     ANULADO = "ANULADO"
 
+
+class CajaEstado(str, Enum):
+    ABIERTA = "ABIERTA"
+    CERRADA = "CERRADA"
+

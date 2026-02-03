@@ -1,4 +1,4 @@
-from .contabilidadEnums import CategoriaTipo, MedioPago
+from .contabilidadEnums import CajaEstado, CategoriaTipo, MedioPago
 
-__all__ = ["CategoriaTipo", "MedioPago"]
+__all__ = ["CajaEstado", "CategoriaTipo", "MedioPago"]
 
