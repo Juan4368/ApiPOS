@@ -88,6 +88,8 @@ class User(Base):
     movimientos_stock: Mapped[list['MovimientosStock']] = relationship('MovimientosStock', back_populates='realizado_por')
     ventas: Mapped[list['Venta']] = relationship('Venta', back_populates='usuario')
     movimientos_financieros: Mapped[list['MovimientoFinanciero']] = relationship('MovimientoFinanciero', back_populates='usuario')
+    cajas: Mapped[list['Caja']] = relationship('Caja', back_populates='usuario')
+    caja_sesiones: Mapped[list['CajaSesion']] = relationship('CajaSesion', back_populates='usuario')
 
 
 class Cliente(Base):
@@ -353,6 +355,7 @@ class Caja(Base):
     __tablename__ = 'cajas'
     __table_args__ = (
         CheckConstraint('saldo_inicial >= 0::numeric', name='ck_cajas_saldo_inicial_no_negativo'),
+        ForeignKeyConstraint(['usuario_id'], ['user.id'], ondelete='SET NULL', name='cajas_usuario_id_fkey'),
         PrimaryKeyConstraint('id', name='cajas_pkey'),
         Index('ix_cajas_id', 'id')
     )
@@ -361,10 +364,41 @@ class Caja(Base):
     nombre: Mapped[str] = mapped_column(String(150), nullable=False)
     saldo_inicial: Mapped[decimal.Decimal] = mapped_column(Numeric(14, 2), nullable=False, default=decimal.Decimal('0.00'))
     estado: Mapped[str] = mapped_column(Enum('ABIERTA', 'CERRADA', name='caja_estado_enum'), nullable=False, default='CERRADA')
+    usuario_id: Mapped[Optional[int]] = mapped_column(Integer)
+    fecha_apertura: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
+    fecha_cierre: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
     created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False, default=datetime.datetime.utcnow)
 
     movimientos_financieros: Mapped[list['MovimientoFinanciero']] = relationship('MovimientoFinanciero', back_populates='caja')
     cierres_caja: Mapped[list['CierreCaja']] = relationship('CierreCaja', back_populates='caja')
+    usuario: Mapped[Optional['User']] = relationship('User', back_populates='cajas')
+    caja_sesiones: Mapped[list['CajaSesion']] = relationship('CajaSesion', back_populates='caja')
+
+
+class CajaSesion(Base):
+    __tablename__ = 'caja_sesion'
+    __table_args__ = (
+        ForeignKeyConstraint(['caja_id'], ['cajas.id'], ondelete='RESTRICT', name='caja_sesion_caja_id_fkey'),
+        ForeignKeyConstraint(['usuario_id'], ['user.id'], ondelete='SET NULL', name='caja_sesion_usuario_id_fkey'),
+        PrimaryKeyConstraint('id', name='caja_sesion_pkey'),
+        Index('ix_caja_sesion_id', 'id'),
+        Index('ix_caja_sesion_caja', 'caja_id'),
+        Index('ix_caja_sesion_usuario', 'usuario_id')
+    )
+
+    id: Mapped[int] = mapped_column(
+        Integer,
+        Identity(start=1, increment=1, minvalue=1, maxvalue=2147483647, cycle=False, cache=1),
+        primary_key=True,
+    )
+    caja_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    usuario_id: Mapped[Optional[int]] = mapped_column(Integer)
+    fecha_apertura: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False, default=datetime.datetime.utcnow)
+    fecha_cierre: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False, default=datetime.datetime.utcnow)
+
+    caja: Mapped['Caja'] = relationship('Caja', back_populates='caja_sesiones')
+    usuario: Mapped[Optional['User']] = relationship('User', back_populates='caja_sesiones')
 
 
 class CajasCerveza(Base):

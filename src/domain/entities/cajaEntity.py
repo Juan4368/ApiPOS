@@ -14,6 +14,9 @@ class CajaEntity(BaseModel):
     nombre: str = Field(..., min_length=1)
     saldo_inicial: Decimal = Field(default=Decimal("0.00"), ge=Decimal("0.00"))
     estado: CajaEstado = CajaEstado.ABIERTA
+    usuario_id: Optional[int] = None
+    fecha_apertura: Optional[datetime] = None
+    fecha_cierre: Optional[datetime] = None
     created_at: Optional[datetime] = None
 
     model_config = ConfigDict(

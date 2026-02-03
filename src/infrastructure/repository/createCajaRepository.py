@@ -20,6 +20,9 @@ class CajaRepository(CajaRepositoryInterface):
             nombre=entity.nombre,
             saldo_inicial=entity.saldo_inicial,
             estado=entity.estado,
+            usuario_id=entity.usuario_id,
+            fecha_apertura=entity.fecha_apertura,
+            fecha_cierre=entity.fecha_cierre,
             created_at=created_at,
         )
         self.db.add(caja_orm)
@@ -44,6 +47,9 @@ class CajaRepository(CajaRepositoryInterface):
         record.nombre = entity.nombre
         record.saldo_inicial = entity.saldo_inicial
         record.estado = entity.estado
+        record.usuario_id = entity.usuario_id
+        record.fecha_apertura = entity.fecha_apertura
+        record.fecha_cierre = entity.fecha_cierre
         self.db.commit()
         self.db.refresh(record)
         return self._to_entity(record)
