@@ -84,7 +84,11 @@ class VentaService(IVentaService):
                     producto_id=item.producto_id,
                     cantidad=item.cantidad,
                     precio_unitario=item.precio_unitario,
-                    subtotal=item.subtotal,
+                    subtotal=(
+                        item.subtotal
+                        if item.subtotal is not None
+                        else Decimal(item.cantidad) * Decimal(item.precio_unitario)
+                    ),
                 )
                 for item in data.detalles
             ]
@@ -157,7 +161,11 @@ class VentaService(IVentaService):
                         producto_id=item.producto_id,
                         cantidad=item.cantidad,
                         precio_unitario=item.precio_unitario,
-                        subtotal=item.subtotal,
+                        subtotal=(
+                            item.subtotal
+                            if item.subtotal is not None
+                            else Decimal(item.cantidad) * Decimal(item.precio_unitario)
+                        ),
                     )
                     for item in data.detalles
                 ]
@@ -229,7 +237,11 @@ class VentaService(IVentaService):
                     producto_id=item.producto_id,
                     cantidad=item.cantidad,
                     precio_unitario=item.precio_unitario,
-                    subtotal=item.subtotal,
+                    subtotal=(
+                        item.subtotal
+                        if item.subtotal is not None
+                        else Decimal(item.cantidad) * Decimal(item.precio_unitario)
+                    ),
                 )
                 for item in data.detalles
             ]
