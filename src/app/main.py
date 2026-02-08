@@ -19,6 +19,9 @@ for path in (PROJECT_ROOT, SRC_DIR):
 from src.app.controller.category_controller import router as category_router
 from src.app.controller.cartera_controller import router as cartera_router
 from src.app.controller.caja_controller import router as caja_router
+from src.app.controller.cierre_caja_denominacion_controller import (
+    router as cierre_caja_denominacion_router,
+)
 from src.app.controller.caja_sesion_controller import router as caja_sesion_router
 from src.app.controller.cajas_cerveza_controller import router as cajas_cerveza_router
 from src.app.controller.cliente_controller import router as cliente_router
@@ -38,6 +41,7 @@ from src.app.controller.product_controller import router as product_router
 from src.app.controller.stock_controller import router as stock_router
 from src.app.controller.user_controller import router as user_router
 from src.app.controller.venta_controller import router as venta_router
+from src.app.controller.visita_controller import router as visita_router
 
 DOCS_URL = "http://127.0.0.1:8000/docs"
 BROWSER_CANDIDATES = [
@@ -77,6 +81,7 @@ def create_app() -> FastAPI:
     app.include_router(category_router)
     app.include_router(cartera_router)
     app.include_router(caja_router)
+    app.include_router(cierre_caja_denominacion_router)
     app.include_router(caja_sesion_router)
     app.include_router(cajas_cerveza_router)
     app.include_router(cliente_router)
@@ -90,6 +95,7 @@ def create_app() -> FastAPI:
     app.include_router(stock_router)
     app.include_router(user_router)
     app.include_router(venta_router)
+    app.include_router(visita_router)
 
     @app.get("/")
     def root():

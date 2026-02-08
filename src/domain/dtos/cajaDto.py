@@ -16,6 +16,9 @@ class CajaRequest(BaseModel):
     usuario_id: Optional[int] = None
     fecha_apertura: Optional[datetime] = None
     fecha_cierre: Optional[datetime] = None
+    cierre_caja: Optional[datetime] = None
+    saldo_final_efectivo: Optional[Decimal] = None
+    diferencia: Optional[Decimal] = None
 
 
 class CajaResponse(BaseModel):
@@ -26,6 +29,9 @@ class CajaResponse(BaseModel):
     usuario_id: Optional[int] = None
     fecha_apertura: Optional[datetime] = None
     fecha_cierre: Optional[datetime] = None
+    cierre_caja: Optional[datetime] = None
+    saldo_final_efectivo: Optional[Decimal] = None
+    diferencia: Optional[Decimal] = None
     created_at: Optional[datetime] = None
 
     model_config = {"from_attributes": True}
@@ -38,3 +44,10 @@ class CajaUpdateRequest(BaseModel):
     usuario_id: Optional[int] = None
     fecha_apertura: Optional[datetime] = None
     fecha_cierre: Optional[datetime] = None
+    cierre_caja: Optional[datetime] = None
+    saldo_final_efectivo: Optional[Decimal] = None
+    diferencia: Optional[Decimal] = None
+
+
+class CajaCerrarRequest(BaseModel):
+    usuario_id: Optional[int] = None

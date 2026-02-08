@@ -22,3 +22,12 @@ class CajaRepositoryInterface(ABC):
     @abstractmethod
     def update_caja(self, caja_id: int, entity: CajaEntity) -> Optional[CajaEntity]:
         raise NotImplementedError
+
+    @abstractmethod
+    def cerrar_caja(
+        self,
+        caja_id: int,
+        *,
+        usuario_id: Optional[int] = None,
+    ) -> Optional[CajaEntity]:
+        raise NotImplementedError

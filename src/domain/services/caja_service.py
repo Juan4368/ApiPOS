@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import List, Optional
 
-from domain.dtos.cajaDto import CajaRequest, CajaResponse, CajaUpdateRequest
+from domain.dtos.cajaDto import CajaCerrarRequest, CajaRequest, CajaResponse, CajaUpdateRequest
 from domain.entities.cajaEntity import CajaEntity
 from domain.interfaces.caja_repository_interface import CajaRepositoryInterface
 
@@ -19,6 +19,9 @@ class CajaService:
             usuario_id=data.usuario_id,
             fecha_apertura=data.fecha_apertura,
             fecha_cierre=data.fecha_cierre,
+            cierre_caja=data.cierre_caja,
+            saldo_final_efectivo=data.saldo_final_efectivo,
+            diferencia=data.diferencia,
         )
         created = self.repository.create_caja(entity)
         return CajaResponse.model_validate(created)
@@ -42,6 +45,9 @@ class CajaService:
             usuario_id=data.usuario_id,
             fecha_apertura=data.fecha_apertura,
             fecha_cierre=data.fecha_cierre,
+            cierre_caja=data.cierre_caja,
+            saldo_final_efectivo=data.saldo_final_efectivo,
+            diferencia=data.diferencia,
         )
         updated = self.repository.update_caja(caja_id, entity)
         if not updated:
@@ -72,9 +78,37 @@ class CajaService:
                 if data.fecha_cierre is not None
                 else current.fecha_cierre
             ),
+            cierre_caja=(
+                data.cierre_caja
+                if data.cierre_caja is not None
+                else current.cierre_caja
+            ),
+            saldo_final_efectivo=(
+                data.saldo_final_efectivo
+                if data.saldo_final_efectivo is not None
+                else current.saldo_final_efectivo
+            ),
+            diferencia=(
+                data.diferencia
+                if data.diferencia is not None
+                else current.diferencia
+            ),
             created_at=current.created_at,
         )
         updated = self.repository.update_caja(caja_id, entity)
         if not updated:
             return None
         return CajaResponse.model_validate(updated)
+
+    def cerrar_caja(
+        self,
+        caja_id: int,
+        data: CajaCerrarRequest,
+    ) -> Optional[CajaResponse]:
+        closed = self.repository.cerrar_caja(
+            caja_id,
+            usuario_id=data.usuario_id,
+        )
+        if not closed:
+            return None
+        return CajaResponse.model_validate(closed)
