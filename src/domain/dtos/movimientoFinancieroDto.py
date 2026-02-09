@@ -24,13 +24,16 @@ class MovimientoFinancieroRequest(BaseModel):
 class MovimientoFinancieroResponse(BaseModel):
     id: int
     fecha: datetime
+    fecha_dia_hora: Optional[str] = None
     tipo: CategoriaTipo
     monto: Decimal
     concepto: str
     nota: Optional[str] = None
     proveedor_id: Optional[int] = None
+    proveedor_nombre: Optional[str] = None
     caja_id: int
     usuario_id: Optional[int] = None
+    usuario_nombre: Optional[str] = None
     venta_id: Optional[int] = None
     created_at: Optional[datetime] = None
 

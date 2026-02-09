@@ -38,3 +38,7 @@ class MovimientoFinancieroRepositoryInterface(ABC):
         self, movimiento_id: int, entity: MovimientoFinancieroEntity
     ) -> Optional[MovimientoFinancieroEntity]:
         raise NotImplementedError
+
+    @abstractmethod
+    def delete_movimiento(self, movimiento_id: int) -> Optional[MovimientoFinancieroEntity]:
+        raise NotImplementedError

@@ -243,6 +243,8 @@ class VentaRepository(VentaRepositoryInterface):
         return VentaEntity.from_model(record)
 
     def _apply_stock_deltas(self, deltas: dict[int, int]) -> None:
+        # Deshabilitado temporalmente: no validar ni ajustar stock.
+        return
         if not deltas:
             return
         now = datetime.now(timezone.utc)

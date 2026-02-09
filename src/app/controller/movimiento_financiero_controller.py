@@ -102,3 +102,14 @@ def patch_movimiento(
     if not movimiento:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Movimiento no encontrado")
     return movimiento
+
+
+@router.delete("/{movimiento_id}", response_model=MovimientoFinancieroResponse)
+def delete_movimiento(
+    movimiento_id: int,
+    service: ServiceDep,
+) -> MovimientoFinancieroResponse:
+    movimiento = service.delete_movimiento(movimiento_id)
+    if not movimiento:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Movimiento no encontrado")
+    return movimiento

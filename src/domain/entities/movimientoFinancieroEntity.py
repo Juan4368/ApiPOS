@@ -17,10 +17,13 @@ class MovimientoFinancieroEntity(BaseModel):
     concepto: str
     nota: Optional[str] = None
     proveedor_id: Optional[int] = None
+    proveedor_nombre: Optional[str] = None
     caja_id: int
     usuario_id: Optional[int] = None
+    usuario_nombre: Optional[str] = None
     venta_id: Optional[int] = None
     created_at: Optional[datetime] = None
+    fecha_dia_hora: Optional[str] = None
 
     model_config = ConfigDict(
         from_attributes=True,

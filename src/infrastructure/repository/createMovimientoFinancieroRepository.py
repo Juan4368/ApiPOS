@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import date, datetime, time
 from typing import List, Optional
 
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from domain.entities.movimientoFinancieroEntity import MovimientoFinancieroEntity
 from domain.enums.contabilidadEnums import CategoriaTipo
@@ -37,7 +37,15 @@ class MovimientoFinancieroRepository(MovimientoFinancieroRepositoryInterface):
         return self._to_entity(movimiento_orm)
 
     def get_movimiento(self, movimiento_id: int) -> Optional[MovimientoFinancieroEntity]:
-        record = self.db.get(MovimientoFinanciero, movimiento_id)
+        record = (
+            self.db.query(MovimientoFinanciero)
+            .options(
+                selectinload(MovimientoFinanciero.proveedor),
+                selectinload(MovimientoFinanciero.usuario),
+            )
+            .filter(MovimientoFinanciero.id == movimiento_id)
+            .first()
+        )
         if not record:
             return None
         return self._to_entity(record)
@@ -53,7 +61,10 @@ class MovimientoFinancieroRepository(MovimientoFinancieroRepositoryInterface):
         usuario_id: Optional[int] = None,
         venta_id: Optional[int] = None,
     ) -> List[MovimientoFinancieroEntity]:
-        query = self.db.query(MovimientoFinanciero)
+        query = self.db.query(MovimientoFinanciero).options(
+            selectinload(MovimientoFinanciero.proveedor),
+            selectinload(MovimientoFinanciero.usuario),
+        )
         if desde:
             query = query.filter(
                 MovimientoFinanciero.fecha >= datetime.combine(desde, time.min)
@@ -96,22 +107,46 @@ class MovimientoFinancieroRepository(MovimientoFinancieroRepositoryInterface):
         self.db.refresh(record)
         return self._to_entity(record)
 
+    def delete_movimiento(self, movimiento_id: int) -> Optional[MovimientoFinancieroEntity]:
+        record = self.db.get(MovimientoFinanciero, movimiento_id)
+        if not record:
+            return None
+        entity = self._to_entity(record)
+        self.db.delete(record)
+        self.db.commit()
+        return entity
+
     def _to_tipo_movimiento(self, tipo: CategoriaTipo) -> str:
         if isinstance(tipo, CategoriaTipo):
             return tipo.value.upper()
-        return str(tipo).upper()
+        value = str(tipo).strip()
+        if "." in value:
+            value = value.split(".")[-1]
+        return value.upper()
 
     def _to_entity(self, record: MovimientoFinanciero) -> MovimientoFinancieroEntity:
+        proveedor_nombre = None
+        usuario_nombre = None
+        fecha_dia_hora = None
+        if record.tipo == "EGRESO":
+            if record.proveedor is not None:
+                proveedor_nombre = record.proveedor.nombre
+            if record.usuario is not None:
+                usuario_nombre = record.usuario.username
+            fecha_dia_hora = record.fecha.strftime("%Y-%m-%d %H:%M")
         return MovimientoFinancieroEntity(
             id=record.id,
             fecha=record.fecha,
+            fecha_dia_hora=fecha_dia_hora,
             tipo=CategoriaTipo(record.tipo),
             monto=record.monto,
             concepto=record.concepto,
             nota=record.nota,
             proveedor_id=record.proveedor_id,
+            proveedor_nombre=proveedor_nombre,
             caja_id=record.caja_id,
             usuario_id=record.usuario_id,
+            usuario_nombre=usuario_nombre,
             venta_id=record.venta_id,
             created_at=record.created_at,
         )

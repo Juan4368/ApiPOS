@@ -28,6 +28,11 @@ class MovimientoFinancieroService:
             return None
         return proveedor_id
 
+    def _normalize_venta_id(self, venta_id: Optional[int]) -> Optional[int]:
+        if venta_id in (None, 0):
+            return None
+        return venta_id
+
     def create_movimiento(
         self, data: MovimientoFinancieroRequest
     ) -> MovimientoFinancieroResponse:
@@ -40,7 +45,7 @@ class MovimientoFinancieroService:
             proveedor_id=self._normalize_proveedor_id(data.tipo, data.proveedor_id),
             caja_id=data.caja_id,
             usuario_id=data.usuario_id,
-            venta_id=data.venta_id,
+            venta_id=self._normalize_venta_id(data.venta_id),
         )
         created = self.repository.create_movimiento(entity)
         return MovimientoFinancieroResponse.model_validate(created)
@@ -88,7 +93,7 @@ class MovimientoFinancieroService:
             proveedor_id=self._normalize_proveedor_id(data.tipo, data.proveedor_id),
             caja_id=data.caja_id,
             usuario_id=data.usuario_id,
-            venta_id=data.venta_id,
+            venta_id=self._normalize_venta_id(data.venta_id),
         )
         updated = self.repository.update_movimiento(movimiento_id, entity)
         if not updated:
@@ -117,10 +122,20 @@ class MovimientoFinancieroService:
             usuario_id=(
                 data.usuario_id if data.usuario_id is not None else current.usuario_id
             ),
-            venta_id=data.venta_id if data.venta_id is not None else current.venta_id,
+            venta_id=self._normalize_venta_id(
+                data.venta_id if data.venta_id is not None else current.venta_id
+            ),
             created_at=current.created_at,
         )
         updated = self.repository.update_movimiento(movimiento_id, entity)
         if not updated:
             return None
         return MovimientoFinancieroResponse.model_validate(updated)
+
+    def delete_movimiento(
+        self, movimiento_id: int
+    ) -> Optional[MovimientoFinancieroResponse]:
+        deleted = self.repository.delete_movimiento(movimiento_id)
+        if not deleted:
+            return None
+        return MovimientoFinancieroResponse.model_validate(deleted)
