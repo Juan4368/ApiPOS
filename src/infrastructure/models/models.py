@@ -318,6 +318,7 @@ class VentaDetalle(Base):
     producto_id: Mapped[int] = mapped_column(Integer, nullable=False)
     cantidad: Mapped[int] = mapped_column(Integer, nullable=False)
     precio_unitario: Mapped[decimal.Decimal] = mapped_column(Numeric(10, 2), nullable=False)
+    descuento: Mapped[decimal.Decimal] = mapped_column(Numeric(12, 2), nullable=False, server_default=text('0'))
     subtotal: Mapped[decimal.Decimal] = mapped_column(Numeric(12, 2), nullable=False)
 
     venta: Mapped['Venta'] = relationship('Venta', back_populates='detalles')

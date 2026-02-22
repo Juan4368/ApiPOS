@@ -12,6 +12,7 @@ class VentaDetalleRequest(BaseModel):
     producto_id: int = Field(..., ge=1)
     cantidad: int = Field(..., ge=1)
     precio_unitario: Decimal = Field(..., ge=Decimal("0.00"))
+    descuento: Decimal = Field(default=Decimal("0.00"), ge=Decimal("0.00"))
     subtotal: Optional[Decimal] = Field(default=None, ge=Decimal("0.00"))
 
 
@@ -42,6 +43,7 @@ class VentaDetalleResponse(BaseModel):
     producto_nombre: Optional[str] = None
     cantidad: int
     precio_unitario: Decimal
+    descuento: Decimal
     subtotal: Decimal
 
     model_config = {"from_attributes": True}

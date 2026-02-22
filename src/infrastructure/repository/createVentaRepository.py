@@ -57,6 +57,7 @@ class VentaRepository(VentaRepositoryInterface):
                 producto_id=detalle.producto_id,
                 cantidad=detalle.cantidad,
                 precio_unitario=detalle.precio_unitario,
+                descuento=detalle.descuento,
                 subtotal=detalle.subtotal,
             )
             for detalle in detalles
@@ -228,6 +229,7 @@ class VentaRepository(VentaRepositoryInterface):
                     producto_id=detalle.producto_id,
                     cantidad=detalle.cantidad,
                     precio_unitario=detalle.precio_unitario,
+                    descuento=detalle.descuento,
                     subtotal=detalle.subtotal,
                 )
                 for detalle in detalles

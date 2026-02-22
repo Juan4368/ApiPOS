@@ -34,13 +34,16 @@ class VentaService(IVentaService):
         for item in items:
             item_subtotal = item.subtotal
             if item_subtotal is None:
-                item_subtotal = Decimal(item.cantidad) * Decimal(item.precio_unitario)
+                item_subtotal = (
+                    Decimal(item.cantidad) * Decimal(item.precio_unitario)
+                ) - Decimal(item.descuento)
             subtotal += item_subtotal
             detalles.append(
                 VentaDetalleEntity(
                     producto_id=item.producto_id,
                     cantidad=item.cantidad,
                     precio_unitario=item.precio_unitario,
+                    descuento=item.descuento,
                     subtotal=item_subtotal,
                 )
             )
@@ -84,10 +87,12 @@ class VentaService(IVentaService):
                     producto_id=item.producto_id,
                     cantidad=item.cantidad,
                     precio_unitario=item.precio_unitario,
+                    descuento=item.descuento,
                     subtotal=(
                         item.subtotal
                         if item.subtotal is not None
-                        else Decimal(item.cantidad) * Decimal(item.precio_unitario)
+                        else (Decimal(item.cantidad) * Decimal(item.precio_unitario))
+                        - Decimal(item.descuento)
                     ),
                 )
                 for item in data.detalles
@@ -161,10 +166,12 @@ class VentaService(IVentaService):
                         producto_id=item.producto_id,
                         cantidad=item.cantidad,
                         precio_unitario=item.precio_unitario,
+                        descuento=item.descuento,
                         subtotal=(
                             item.subtotal
                             if item.subtotal is not None
-                            else Decimal(item.cantidad) * Decimal(item.precio_unitario)
+                            else (Decimal(item.cantidad) * Decimal(item.precio_unitario))
+                            - Decimal(item.descuento)
                         ),
                     )
                     for item in data.detalles
@@ -237,10 +244,12 @@ class VentaService(IVentaService):
                     producto_id=item.producto_id,
                     cantidad=item.cantidad,
                     precio_unitario=item.precio_unitario,
+                    descuento=item.descuento,
                     subtotal=(
                         item.subtotal
                         if item.subtotal is not None
-                        else Decimal(item.cantidad) * Decimal(item.precio_unitario)
+                        else (Decimal(item.cantidad) * Decimal(item.precio_unitario))
+                        - Decimal(item.descuento)
                     ),
                 )
                 for item in data.detalles
@@ -279,6 +288,7 @@ class VentaService(IVentaService):
                 producto_id=detalle.producto_id,
                 cantidad=detalle.cantidad,
                 precio_unitario=detalle.precio_unitario,
+                descuento=detalle.descuento,
                 subtotal=detalle.subtotal,
             )
             for detalle in detalles_filtrados

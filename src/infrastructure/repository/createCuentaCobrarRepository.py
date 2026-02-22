@@ -160,6 +160,7 @@ class CuentaCobrarRepository(CuentaCobrarRepositoryInterface):
                         producto_nombre=detalle.producto.nombre if detalle.producto else None,
                         cantidad=detalle.cantidad,
                         precio_unitario=detalle.precio_unitario,
+                        descuento=detalle.descuento,
                         subtotal=detalle.subtotal,
                     )
                 )
