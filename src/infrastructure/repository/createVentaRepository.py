@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date, datetime, time, timezone
+from datetime import date, datetime, time
 from decimal import Decimal
 from typing import List, Optional
 
@@ -12,6 +12,7 @@ from domain.entities.ventaEntity import VentaEntity
 from domain.dtos.ventaDto import VentaResumenResponse
 from domain.interfaces.venta_repository_interface import VentaRepositoryInterface
 from src.infrastructure.models.models import Cliente, CuentaCobrar, Stock, User, Venta, VentaDetalle
+from utils.timezone import end_of_day, now_utc_minus_5, start_of_day
 
 
 class VentaRepository(VentaRepositoryInterface):
@@ -118,9 +119,9 @@ class VentaRepository(VentaRepositoryInterface):
             .outerjoin(User, Venta.user_id == User.user_id)
         )
         if desde:
-            query = query.filter(Venta.fecha >= datetime.combine(desde, time.min))
+            query = query.filter(Venta.fecha >= start_of_day(desde))
         if hasta:
-            query = query.filter(Venta.fecha <= datetime.combine(hasta, time.max))
+            query = query.filter(Venta.fecha <= end_of_day(hasta))
         records = query.order_by(Venta.fecha.desc()).all()
         return [
             VentaResumenResponse.model_validate(dict(row._mapping)) for row in records
@@ -251,7 +252,7 @@ class VentaRepository(VentaRepositoryInterface):
         return
         if not deltas:
             return
-        now = datetime.now(timezone.utc)
+        now = now_utc_minus_5()
         for producto_id, delta in deltas.items():
             if delta == 0:
                 continue

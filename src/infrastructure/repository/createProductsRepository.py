@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime
 from decimal import Decimal
 from typing import List, Optional
 
@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session, joinedload
 from domain.entities.productsEntity import ProductEntity
 from domain.interfaces.product_repository_interface import ProductRepositoryInterface
 from src.infrastructure.models.models import Product
+from utils.timezone import ensure_utc_minus_5, now_utc_minus_5
 
 
 class ProductRepository(ProductRepositoryInterface):
@@ -20,8 +21,16 @@ class ProductRepository(ProductRepositoryInterface):
 
     def create_product(self, product_entity: ProductEntity) -> ProductEntity:
         """Crea un nuevo producto en la base de datos y devuelve la entidad."""
-        fecha_creacion = product_entity.fecha_creacion or datetime.now(timezone.utc)
-        fecha_actualizacion = product_entity.fecha_actualizacion or fecha_creacion
+        fecha_creacion = (
+            ensure_utc_minus_5(product_entity.fecha_creacion)
+            if product_entity.fecha_creacion
+            else now_utc_minus_5()
+        )
+        fecha_actualizacion = (
+            ensure_utc_minus_5(product_entity.fecha_actualizacion)
+            if product_entity.fecha_actualizacion
+            else fecha_creacion
+        )
         product_orm = Product(
             producto_id=product_entity.producto_id,
             codigo_barras=product_entity.codigo_barras,
@@ -135,9 +144,11 @@ class ProductRepository(ProductRepositoryInterface):
         record.creado_por_id = product_entity.creado_por_id
         record.actualizado_por_id = product_entity.actualizado_por_id
         if product_entity.fecha_creacion is not None:
-            record.fecha_creacion = product_entity.fecha_creacion
+            record.fecha_creacion = ensure_utc_minus_5(product_entity.fecha_creacion)
         record.fecha_actualizacion = (
-            product_entity.fecha_actualizacion or datetime.now(timezone.utc)
+            ensure_utc_minus_5(product_entity.fecha_actualizacion)
+            if product_entity.fecha_actualizacion
+            else now_utc_minus_5()
         )
 
         self.db.commit()
@@ -167,7 +178,11 @@ class ProductRepository(ProductRepositoryInterface):
         record.estado = estado
         if actualizado_por_id is not None:
             record.actualizado_por_id = actualizado_por_id
-        record.fecha_actualizacion = fecha_actualizacion or datetime.now(timezone.utc)
+        record.fecha_actualizacion = (
+            ensure_utc_minus_5(fecha_actualizacion)
+            if fecha_actualizacion
+            else now_utc_minus_5()
+        )
 
         self.db.commit()
         self.db.refresh(record)
@@ -206,8 +221,16 @@ class ProductRepository(ProductRepositoryInterface):
             if code:
                 seen.add(code)
 
-            fecha_creacion = entity.fecha_creacion or datetime.now(timezone.utc)
-            fecha_actualizacion = entity.fecha_actualizacion or fecha_creacion
+            fecha_creacion = (
+                ensure_utc_minus_5(entity.fecha_creacion)
+                if entity.fecha_creacion
+                else now_utc_minus_5()
+            )
+            fecha_actualizacion = (
+                ensure_utc_minus_5(entity.fecha_actualizacion)
+                if entity.fecha_actualizacion
+                else fecha_creacion
+            )
             product_orm = Product(
                 producto_id=entity.producto_id,
                 codigo_barras=entity.codigo_barras,

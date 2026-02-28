@@ -11,6 +11,7 @@ from domain.interfaces.movimiento_financiero_repository_interface import (
     MovimientoFinancieroRepositoryInterface,
 )
 from src.infrastructure.models.models import MovimientoFinanciero
+from utils.timezone import end_of_day, ensure_utc_minus_5, start_of_day
 
 
 class MovimientoFinancieroRepository(MovimientoFinancieroRepositoryInterface):
@@ -21,7 +22,7 @@ class MovimientoFinancieroRepository(MovimientoFinancieroRepositoryInterface):
         self, entity: MovimientoFinancieroEntity
     ) -> MovimientoFinancieroEntity:
         movimiento_orm = MovimientoFinanciero(
-            fecha=entity.fecha,
+            fecha=ensure_utc_minus_5(entity.fecha),
             tipo=self._to_tipo_movimiento(entity.tipo),
             monto=entity.monto,
             concepto=entity.concepto,
@@ -66,13 +67,9 @@ class MovimientoFinancieroRepository(MovimientoFinancieroRepositoryInterface):
             selectinload(MovimientoFinanciero.usuario),
         )
         if desde:
-            query = query.filter(
-                MovimientoFinanciero.fecha >= datetime.combine(desde, time.min)
-            )
+            query = query.filter(MovimientoFinanciero.fecha >= start_of_day(desde))
         if hasta:
-            query = query.filter(
-                MovimientoFinanciero.fecha <= datetime.combine(hasta, time.max)
-            )
+            query = query.filter(MovimientoFinanciero.fecha <= end_of_day(hasta))
         if caja_id is not None:
             query = query.filter(MovimientoFinanciero.caja_id == caja_id)
         if tipo is not None:
@@ -94,7 +91,7 @@ class MovimientoFinancieroRepository(MovimientoFinancieroRepositoryInterface):
         record = self.db.get(MovimientoFinanciero, movimiento_id)
         if not record:
             return None
-        record.fecha = entity.fecha
+        record.fecha = ensure_utc_minus_5(entity.fecha)
         record.tipo = self._to_tipo_movimiento(entity.tipo)
         record.monto = entity.monto
         record.concepto = entity.concepto

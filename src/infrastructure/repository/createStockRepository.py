@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import List, Optional
 
 from sqlalchemy import or_
@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from domain.entities.stockEntity import StockEntity
 from domain.interfaces.stock_repository_interface import StockRepositoryInterface
 from src.infrastructure.models.models import Stock
+from utils.timezone import ensure_utc_minus_5, now_utc_minus_5
 
 
 class StockRepository(StockRepositoryInterface):
@@ -18,7 +19,11 @@ class StockRepository(StockRepositoryInterface):
         self.db = db
 
     def create_stock(self, stock_entity: StockEntity) -> StockEntity:
-        ultima_actualizacion = stock_entity.ultima_actualizacion or datetime.now(timezone.utc)
+        ultima_actualizacion = (
+            ensure_utc_minus_5(stock_entity.ultima_actualizacion)
+            if stock_entity.ultima_actualizacion
+            else now_utc_minus_5()
+        )
         stock_orm = Stock(
             stock_id=stock_entity.stock_id,
             producto_id=stock_entity.producto_id,

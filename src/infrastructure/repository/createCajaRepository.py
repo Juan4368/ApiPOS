@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from decimal import Decimal
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import List, Optional
 
 from sqlalchemy import func
@@ -16,6 +16,7 @@ from src.infrastructure.models.models import (
     CierreCajaDenominacion,
     MovimientoFinanciero,
 )
+from utils.timezone import ensure_utc_minus_5, now_utc_minus_5
 
 
 class CajaRepository(CajaRepositoryInterface):
@@ -23,15 +24,31 @@ class CajaRepository(CajaRepositoryInterface):
         self.db = db
 
     def create_caja(self, entity: CajaEntity) -> CajaEntity:
-        created_at = entity.created_at or datetime.now(timezone.utc)
+        created_at = (
+            ensure_utc_minus_5(entity.created_at)
+            if entity.created_at
+            else now_utc_minus_5()
+        )
         caja_orm = Caja(
             nombre=entity.nombre,
             saldo_inicial=entity.saldo_inicial,
             estado=entity.estado,
             usuario_id=entity.usuario_id,
-            fecha_apertura=entity.fecha_apertura,
-            fecha_cierre=entity.fecha_cierre,
-            cierre_caja=entity.cierre_caja,
+            fecha_apertura=(
+                ensure_utc_minus_5(entity.fecha_apertura)
+                if entity.fecha_apertura
+                else None
+            ),
+            fecha_cierre=(
+                ensure_utc_minus_5(entity.fecha_cierre)
+                if entity.fecha_cierre
+                else None
+            ),
+            cierre_caja=(
+                ensure_utc_minus_5(entity.cierre_caja)
+                if entity.cierre_caja
+                else None
+            ),
             saldo_final_efectivo=entity.saldo_final_efectivo,
             diferencia=entity.diferencia,
             created_at=created_at,
@@ -59,9 +76,17 @@ class CajaRepository(CajaRepositoryInterface):
         record.saldo_inicial = entity.saldo_inicial
         record.estado = entity.estado
         record.usuario_id = entity.usuario_id
-        record.fecha_apertura = entity.fecha_apertura
-        record.fecha_cierre = entity.fecha_cierre
-        record.cierre_caja = entity.cierre_caja
+        record.fecha_apertura = (
+            ensure_utc_minus_5(entity.fecha_apertura)
+            if entity.fecha_apertura
+            else None
+        )
+        record.fecha_cierre = (
+            ensure_utc_minus_5(entity.fecha_cierre) if entity.fecha_cierre else None
+        )
+        record.cierre_caja = (
+            ensure_utc_minus_5(entity.cierre_caja) if entity.cierre_caja else None
+        )
         record.saldo_final_efectivo = entity.saldo_final_efectivo
         record.diferencia = entity.diferencia
         self.db.commit()
@@ -78,7 +103,7 @@ class CajaRepository(CajaRepositoryInterface):
         if not record:
             return None
 
-        cierre_time = datetime.now(timezone.utc)
+        cierre_time = now_utc_minus_5()
         fecha_apertura = record.fecha_apertura
 
         ingresos_query = self.db.query(

@@ -9,6 +9,7 @@ from domain.entities.egresoEntity import EgresoEntity
 from domain.enums.contabilidadEnums import MedioPago
 from domain.interfaces.egreso_repository_interface import EgresoRepositoryInterface
 from src.infrastructure.models.models import Egreso
+from utils.timezone import end_of_day, start_of_day
 
 
 class EgresoRepository(EgresoRepositoryInterface):
@@ -18,7 +19,7 @@ class EgresoRepository(EgresoRepositoryInterface):
     def create_egreso(self, entity: EgresoEntity) -> EgresoEntity:
         egreso_orm = Egreso(
             monto=entity.monto,
-            fecha=datetime.combine(entity.fecha, time.min),
+            fecha=start_of_day(entity.fecha),
             tipo_egreso=self._to_tipo_egreso(entity.tipo_egreso),
             categoria_contabilidad_id=entity.categoria_contabilidad_id,
             notas=entity.notas,
@@ -40,9 +41,9 @@ class EgresoRepository(EgresoRepositoryInterface):
     ) -> List[EgresoEntity]:
         query = self.db.query(Egreso)
         if desde:
-            query = query.filter(Egreso.fecha >= datetime.combine(desde, time.min))
+            query = query.filter(Egreso.fecha >= start_of_day(desde))
         if hasta:
-            query = query.filter(Egreso.fecha <= datetime.combine(hasta, time.max))
+            query = query.filter(Egreso.fecha <= end_of_day(hasta))
         records = query.order_by(Egreso.fecha.desc()).all()
         return [self._to_entity(record) for record in records]
 
@@ -51,7 +52,7 @@ class EgresoRepository(EgresoRepositoryInterface):
         if not record:
             return None
         record.monto = entity.monto
-        record.fecha = datetime.combine(entity.fecha, time.min)
+        record.fecha = start_of_day(entity.fecha)
         record.tipo_egreso = self._to_tipo_egreso(entity.tipo_egreso)
         record.categoria_contabilidad_id = entity.categoria_contabilidad_id
         record.notas = entity.notas

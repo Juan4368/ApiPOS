@@ -5,6 +5,7 @@ import uuid
 
 from sqlalchemy import Boolean, CheckConstraint, DateTime, Enum, ForeignKeyConstraint, Identity, Index, Integer, Numeric, PrimaryKeyConstraint, String, Text, UniqueConstraint, Uuid, text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from utils.timezone import now_utc_minus_5
 
 class Base(DeclarativeBase):
     pass
@@ -110,7 +111,7 @@ class Cliente(Base):
     nombre_normalizado: Mapped[str] = mapped_column(String(255), nullable=False)
     telefono: Mapped[Optional[str]] = mapped_column(String(100))
     email: Mapped[Optional[str]] = mapped_column(String(255))
-    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False, default=datetime.datetime.utcnow)
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False, default=now_utc_minus_5)
     descuento_pesos: Mapped[Optional[decimal.Decimal]] = mapped_column(Numeric(12, 2))
     descuento_porcentaje: Mapped[Optional[decimal.Decimal]] = mapped_column(Numeric(5, 2))
 
@@ -136,9 +137,9 @@ class Visita(Base):
     )
     cliente_id: Mapped[Optional[uuid.UUID]] = mapped_column(Uuid)
     usuario_id: Mapped[Optional[int]] = mapped_column(Integer)
-    fecha: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False, default=datetime.datetime.utcnow)
+    fecha: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False, default=now_utc_minus_5)
     motivo: Mapped[Optional[str]] = mapped_column(String(255))
-    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False, default=datetime.datetime.utcnow)
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False, default=now_utc_minus_5)
 
     cliente: Mapped[Optional['Cliente']] = relationship('Cliente', back_populates='visitas')
     usuario: Mapped[Optional['User']] = relationship('User', back_populates='visitas')
@@ -405,7 +406,7 @@ class Caja(Base):
     cierre_caja: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
     saldo_final_efectivo: Mapped[Optional[decimal.Decimal]] = mapped_column(Numeric(14, 2))
     diferencia: Mapped[Optional[decimal.Decimal]] = mapped_column(Numeric(14, 2))
-    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False, default=datetime.datetime.utcnow)
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False, default=now_utc_minus_5)
 
     movimientos_financieros: Mapped[list['MovimientoFinanciero']] = relationship('MovimientoFinanciero', back_populates='caja')
     usuario: Mapped[Optional['User']] = relationship('User', back_populates='cajas')
@@ -434,9 +435,9 @@ class CajaSesion(Base):
     )
     caja_id: Mapped[int] = mapped_column(Integer, nullable=False)
     usuario_id: Mapped[Optional[int]] = mapped_column(Integer)
-    fecha_apertura: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False, default=datetime.datetime.utcnow)
+    fecha_apertura: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False, default=now_utc_minus_5)
     fecha_cierre: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
-    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False, default=datetime.datetime.utcnow)
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False, default=now_utc_minus_5)
 
     caja: Mapped['Caja'] = relationship('Caja', back_populates='caja_sesiones')
     usuario: Mapped[Optional['User']] = relationship('User', back_populates='caja_sesiones')
@@ -471,7 +472,7 @@ class CierreCajaDenominacion(Base):
     cantidad: Mapped[int] = mapped_column(Integer, nullable=False)
     subtotal: Mapped[decimal.Decimal] = mapped_column(Numeric(14, 2), nullable=False)
     fecha_conteo: Mapped[datetime.datetime] = mapped_column(
-        DateTime(True), nullable=False, default=datetime.datetime.utcnow
+        DateTime(True), nullable=False, default=now_utc_minus_5
     )
 
     caja: Mapped['Caja'] = relationship('Caja', back_populates='cierre_caja_denominaciones')
@@ -489,7 +490,7 @@ class CajasCerveza(Base):
     nombre: Mapped[str] = mapped_column(String(150), nullable=False)
     cantidad_cajas: Mapped[int] = mapped_column(Integer, nullable=False)
     entregado: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    fecha: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False, default=datetime.datetime.utcnow)
+    fecha: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False, default=now_utc_minus_5)
     cajero: Mapped[Optional[str]] = mapped_column(String(150))
     actualizado_por: Mapped[Optional[str]] = mapped_column(String(150))
 
@@ -505,7 +506,7 @@ class Proveedor(Base):
     nombre: Mapped[str] = mapped_column(String(255), nullable=False)
     telefono: Mapped[Optional[str]] = mapped_column(String(50))
     email: Mapped[Optional[str]] = mapped_column(String(255))
-    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False, default=datetime.datetime.utcnow)
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False, default=now_utc_minus_5)
 
     movimientos_financieros: Mapped[list['MovimientoFinanciero']] = relationship('MovimientoFinanciero', back_populates='proveedor')
 
@@ -528,7 +529,7 @@ class CierreCaja(Base):
     total_ingresos: Mapped[decimal.Decimal] = mapped_column(Numeric(14, 2), nullable=False, default=decimal.Decimal('0.00'))
     total_egresos: Mapped[decimal.Decimal] = mapped_column(Numeric(14, 2), nullable=False, default=decimal.Decimal('0.00'))
     observaciones: Mapped[Optional[str]] = mapped_column(Text)
-    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False, default=datetime.datetime.utcnow)
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False, default=now_utc_minus_5)
 
     caja: Mapped['Caja'] = relationship('Caja')
 
@@ -570,7 +571,7 @@ class MovimientoFinanciero(Base):
     venta_id: Mapped[Optional[int]] = mapped_column(Integer)
     proveedor_id: Mapped[Optional[int]] = mapped_column(Integer)
     caja_id: Mapped[int] = mapped_column(Integer, nullable=False)
-    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False, default=datetime.datetime.utcnow)
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False, default=now_utc_minus_5)
 
     caja: Mapped['Caja'] = relationship('Caja', back_populates='movimientos_financieros')
     usuario: Mapped[Optional['User']] = relationship('User', back_populates='movimientos_financieros')
@@ -599,7 +600,7 @@ class CuentaCobrar(Base):
     total: Mapped[decimal.Decimal] = mapped_column(Numeric(14, 2), nullable=False)
     saldo: Mapped[decimal.Decimal] = mapped_column(Numeric(14, 2), nullable=False)
     estado: Mapped[str] = mapped_column(Enum('PENDIENTE', 'PARCIAL', 'PAGADO', 'ANULADO', name='credito_estado_enum'), nullable=False)
-    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False, default=datetime.datetime.utcnow)
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False, default=now_utc_minus_5)
     updated_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
 
     venta: Mapped[Optional['Venta']] = relationship('Venta', back_populates='cuentas_por_cobrar')
@@ -624,7 +625,7 @@ class AbonoCuenta(Base):
     movimiento_id: Mapped[int] = mapped_column(Integer, nullable=False)
     monto: Mapped[decimal.Decimal] = mapped_column(Numeric(14, 2), nullable=False)
     fecha: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False)
-    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False, default=datetime.datetime.utcnow)
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False, default=now_utc_minus_5)
 
     cuenta: Mapped['CuentaCobrar'] = relationship('CuentaCobrar', back_populates='abonos')
     movimiento: Mapped['MovimientoFinanciero'] = relationship('MovimientoFinanciero')

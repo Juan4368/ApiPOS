@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import List, Optional
 
 from sqlalchemy.orm import Session
@@ -10,6 +10,7 @@ from domain.interfaces.caja_sesion_repository_interface import (
     CajaSesionRepositoryInterface,
 )
 from src.infrastructure.models.models import CajaSesion
+from utils.timezone import ensure_utc_minus_5, now_utc_minus_5
 
 
 class CajaSesionRepository(CajaSesionRepositoryInterface):
@@ -17,14 +18,24 @@ class CajaSesionRepository(CajaSesionRepositoryInterface):
         self.db = db
 
     def create_caja_sesion(self, entity: CajaSesionEntity) -> CajaSesionEntity:
-        now = datetime.now(timezone.utc)
-        fecha_apertura = entity.fecha_apertura or now
-        created_at = entity.created_at or now
+        now = now_utc_minus_5()
+        fecha_apertura = (
+            ensure_utc_minus_5(entity.fecha_apertura)
+            if entity.fecha_apertura
+            else now
+        )
+        created_at = (
+            ensure_utc_minus_5(entity.created_at) if entity.created_at else now
+        )
         record = CajaSesion(
             caja_id=entity.caja_id,
             usuario_id=entity.usuario_id,
             fecha_apertura=fecha_apertura,
-            fecha_cierre=entity.fecha_cierre,
+            fecha_cierre=(
+                ensure_utc_minus_5(entity.fecha_cierre)
+                if entity.fecha_cierre
+                else None
+            ),
             created_at=created_at,
         )
         self.db.add(record)
@@ -66,8 +77,16 @@ class CajaSesionRepository(CajaSesionRepositoryInterface):
             return None
         record.caja_id = entity.caja_id
         record.usuario_id = entity.usuario_id
-        record.fecha_apertura = entity.fecha_apertura or record.fecha_apertura
-        record.fecha_cierre = entity.fecha_cierre
+        record.fecha_apertura = (
+            ensure_utc_minus_5(entity.fecha_apertura)
+            if entity.fecha_apertura
+            else record.fecha_apertura
+        )
+        record.fecha_cierre = (
+            ensure_utc_minus_5(entity.fecha_cierre)
+            if entity.fecha_cierre
+            else None
+        )
         self.db.commit()
         self.db.refresh(record)
         return self._to_entity(record)

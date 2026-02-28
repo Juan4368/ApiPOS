@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import List, Optional
 
 from sqlalchemy import or_
@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session, joinedload
 from domain.entities.categoryEntity import CategoryEntity
 from domain.interfaces.category_repository_interface import CategoryRepositoryInterface
 from src.infrastructure.models.models import Categoria
+from utils.timezone import ensure_utc_minus_5, now_utc_minus_5
 
 
 class CategoryRepository(CategoryRepositoryInterface):
@@ -18,8 +19,16 @@ class CategoryRepository(CategoryRepositoryInterface):
         self.db = db
 
     def create_category(self, category_entity: CategoryEntity) -> CategoryEntity:
-        fecha_creacion = category_entity.fecha_creacion or datetime.now(timezone.utc)
-        fecha_actualizacion = category_entity.fecha_actualizacion or fecha_creacion
+        fecha_creacion = (
+            ensure_utc_minus_5(category_entity.fecha_creacion)
+            if category_entity.fecha_creacion
+            else now_utc_minus_5()
+        )
+        fecha_actualizacion = (
+            ensure_utc_minus_5(category_entity.fecha_actualizacion)
+            if category_entity.fecha_actualizacion
+            else fecha_creacion
+        )
         categoria_orm = Categoria(
             categoria_id=category_entity.categoria_id,
             nombre=category_entity.nombre,
@@ -108,7 +117,11 @@ class CategoryRepository(CategoryRepositoryInterface):
         record.estado = estado
         if actualizado_por_id is not None:
             record.actualizado_por_id = actualizado_por_id
-        record.fecha_actualizacion = fecha_actualizacion or datetime.now(timezone.utc)
+        record.fecha_actualizacion = (
+            ensure_utc_minus_5(fecha_actualizacion)
+            if fecha_actualizacion
+            else now_utc_minus_5()
+        )
         self.db.commit()
         self.db.refresh(record)
         return self._to_entity(record)

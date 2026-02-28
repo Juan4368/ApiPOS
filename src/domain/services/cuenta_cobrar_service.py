@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime
 from decimal import Decimal
 from typing import List, Optional
 from uuid import UUID
@@ -17,6 +17,7 @@ from domain.enums.contabilidadEnums import CreditoEstado
 from domain.interfaces.cuenta_cobrar_repository_interface import (
     CuentaCobrarRepositoryInterface,
 )
+from utils.timezone import ensure_utc_minus_5, now_utc_minus_5
 
 
 class CuentaCobrarService:
@@ -34,7 +35,7 @@ class CuentaCobrarService:
             total=data.total,
             saldo=saldo,
             estado=estado,
-            created_at=datetime.now(timezone.utc),
+            created_at=now_utc_minus_5(),
         )
         created = self.repository.create_cuenta(entity)
         return CuentaCobrarResponse.model_validate(created)
@@ -71,7 +72,7 @@ class CuentaCobrarService:
             total=data.total,
             saldo=saldo,
             estado=estado,
-            updated_at=datetime.now(timezone.utc),
+            updated_at=now_utc_minus_5(),
         )
         updated = self.repository.update_cuenta(cuenta_id, entity)
         if not updated:
@@ -99,7 +100,7 @@ class CuentaCobrarService:
             saldo=saldo,
             estado=estado,
             created_at=current.created_at,
-            updated_at=datetime.now(timezone.utc),
+            updated_at=now_utc_minus_5(),
         )
         updated = self.repository.update_cuenta(cuenta_id, entity)
         if not updated:
@@ -113,7 +114,7 @@ class CuentaCobrarService:
             cuenta_id=cuenta_id,
             movimiento_id=0,
             monto=data.monto,
-            fecha=data.fecha,
+            fecha=ensure_utc_minus_5(data.fecha),
             concepto=data.concepto,
             caja_id=data.caja_id,
             usuario_id=data.usuario_id,

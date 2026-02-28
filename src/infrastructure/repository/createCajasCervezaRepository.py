@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import List, Optional
 
 from sqlalchemy.orm import Session
@@ -10,6 +10,7 @@ from domain.interfaces.cajas_cerveza_repository_interface import (
     CajasCervezaRepositoryInterface,
 )
 from src.infrastructure.models.models import CajasCerveza
+from utils.timezone import ensure_utc_minus_5, now_utc_minus_5
 
 
 class CajasCervezaRepository(CajasCervezaRepositoryInterface):
@@ -17,7 +18,9 @@ class CajasCervezaRepository(CajasCervezaRepositoryInterface):
         self.db = db
 
     def create_cajas_cerveza(self, entity: CajasCervezaEntity) -> CajasCervezaEntity:
-        fecha = entity.fecha or datetime.now(timezone.utc)
+        fecha = (
+            ensure_utc_minus_5(entity.fecha) if entity.fecha else now_utc_minus_5()
+        )
         record = CajasCerveza(
             nombre=entity.nombre,
             cantidad_cajas=entity.cantidad_cajas,
@@ -50,7 +53,9 @@ class CajasCervezaRepository(CajasCervezaRepositoryInterface):
         record.nombre = entity.nombre
         record.cantidad_cajas = entity.cantidad_cajas
         record.entregado = entity.entregado
-        record.fecha = entity.fecha or record.fecha
+        record.fecha = (
+            ensure_utc_minus_5(entity.fecha) if entity.fecha else record.fecha
+        )
         record.cajero = entity.cajero
         record.actualizado_por = entity.actualizado_por
         self.db.commit()

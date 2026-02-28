@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import List, Optional
 
 from sqlalchemy import or_, func
@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from domain.entities.proveedorEntity import ProveedorEntity
 from domain.interfaces.proveedor_repository_interface import ProveedorRepositoryInterface
 from src.infrastructure.models.models import Proveedor
+from utils.timezone import ensure_utc_minus_5, now_utc_minus_5
 
 
 class ProveedorRepository(ProveedorRepositoryInterface):
@@ -18,7 +19,11 @@ class ProveedorRepository(ProveedorRepositoryInterface):
     def create_proveedor(
         self, entity: ProveedorEntity, nombre_normalizado: Optional[str] = None
     ) -> ProveedorEntity:
-        created_at = entity.created_at or datetime.now(timezone.utc)
+        created_at = (
+            ensure_utc_minus_5(entity.created_at)
+            if entity.created_at
+            else now_utc_minus_5()
+        )
         proveedor_orm = Proveedor(
             nombre=entity.nombre,
             telefono=entity.telefono,

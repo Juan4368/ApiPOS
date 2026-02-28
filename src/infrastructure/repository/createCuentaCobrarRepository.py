@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime
 from decimal import Decimal
 from typing import List, Optional
 from uuid import UUID
@@ -15,6 +15,7 @@ from domain.interfaces.cuenta_cobrar_repository_interface import (
 )
 from src.infrastructure.models.models import AbonoCuenta, CuentaCobrar, MovimientoFinanciero, Venta, VentaDetalle
 from domain.entities.ventaDetalleEntity import VentaDetalleEntity
+from utils.timezone import ensure_utc_minus_5, now_utc_minus_5
 
 
 class CuentaCobrarRepository(CuentaCobrarRepositoryInterface):
@@ -22,7 +23,11 @@ class CuentaCobrarRepository(CuentaCobrarRepositoryInterface):
         self.db = db
 
     def create_cuenta(self, entity: CuentaCobrarEntity) -> CuentaCobrarEntity:
-        created_at = entity.created_at or datetime.now(timezone.utc)
+        created_at = (
+            ensure_utc_minus_5(entity.created_at)
+            if entity.created_at
+            else now_utc_minus_5()
+        )
         cuenta_orm = CuentaCobrar(
             venta_id=entity.venta_id,
             cliente_id=entity.cliente_id,
@@ -86,7 +91,11 @@ class CuentaCobrarRepository(CuentaCobrarRepositoryInterface):
         record.total = entity.total
         record.saldo = entity.saldo
         record.estado = self._to_estado(entity.estado)
-        record.updated_at = entity.updated_at or datetime.now(timezone.utc)
+        record.updated_at = (
+            ensure_utc_minus_5(entity.updated_at)
+            if entity.updated_at
+            else now_utc_minus_5()
+        )
         self.db.commit()
         self.db.refresh(record)
         return self._to_entity(record)
@@ -109,8 +118,9 @@ class CuentaCobrarRepository(CuentaCobrarRepositoryInterface):
             raise ValueError("El abono no puede superar el saldo")
 
         concepto = abono.concepto or "Abono a credito"
+        abono_fecha = ensure_utc_minus_5(abono.fecha)
         movimiento = MovimientoFinanciero(
-            fecha=abono.fecha,
+            fecha=abono_fecha,
             tipo="INGRESO",
             monto=abono.monto,
             concepto=concepto,
@@ -125,14 +135,14 @@ class CuentaCobrarRepository(CuentaCobrarRepositoryInterface):
             cuenta_id=cuenta_id,
             movimiento_id=movimiento.id,
             monto=abono.monto,
-            fecha=abono.fecha,
-            created_at=datetime.now(timezone.utc),
+            fecha=abono_fecha,
+            created_at=now_utc_minus_5(),
         )
         self.db.add(abono_orm)
 
         cuenta.saldo = cuenta.saldo - abono.monto
         cuenta.estado = self._to_estado(self._calcular_estado(cuenta.total, cuenta.saldo))
-        cuenta.updated_at = datetime.now(timezone.utc)
+        cuenta.updated_at = now_utc_minus_5()
 
         self.db.commit()
         self.db.refresh(abono_orm)

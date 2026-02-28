@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime
 from decimal import Decimal
 from datetime import date
 from typing import List, Optional
@@ -18,6 +18,7 @@ from domain.entities.ventaDetalleEntity import VentaDetalleEntity
 from domain.entities.ventaEntity import VentaEntity
 from domain.interfaces.IVentaService import IVentaService
 from domain.interfaces.venta_repository_interface import VentaRepositoryInterface
+from utils.timezone import ensure_utc_minus_5, now_utc_minus_5
 
 
 class VentaService(IVentaService):
@@ -104,7 +105,7 @@ class VentaService(IVentaService):
         impuesto = Decimal(data.impuesto)
         descuento = Decimal(data.descuento)
         total = subtotal + impuesto - descuento
-        fecha = data.fecha or datetime.now(timezone.utc)
+        fecha = ensure_utc_minus_5(data.fecha) if data.fecha else now_utc_minus_5()
 
         venta_entity = VentaEntity(
             fecha=fecha,
@@ -208,7 +209,7 @@ class VentaService(IVentaService):
 
         venta_entity = VentaEntity(
             venta_id=venta_id,
-            fecha=data.fecha or current.fecha,
+            fecha=ensure_utc_minus_5(data.fecha) if data.fecha else ensure_utc_minus_5(current.fecha),
             subtotal=subtotal,
             impuesto=Decimal(impuesto),
             descuento=Decimal(descuento),

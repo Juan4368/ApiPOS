@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import List, Optional
 
 from sqlalchemy.orm import Session
@@ -10,6 +10,7 @@ from domain.interfaces.cierre_caja_denominacion_repository_interface import (
     CierreCajaDenominacionRepositoryInterface,
 )
 from src.infrastructure.models.models import CierreCajaDenominacion
+from utils.timezone import ensure_utc_minus_5, now_utc_minus_5
 
 
 class CierreCajaDenominacionRepository(CierreCajaDenominacionRepositoryInterface):
@@ -19,7 +20,11 @@ class CierreCajaDenominacionRepository(CierreCajaDenominacionRepositoryInterface
     def create_denominacion(
         self, entity: CierreCajaDenominacionEntity
     ) -> CierreCajaDenominacionEntity:
-        fecha_conteo = entity.fecha_conteo or datetime.now(timezone.utc)
+        fecha_conteo = (
+            ensure_utc_minus_5(entity.fecha_conteo)
+            if entity.fecha_conteo
+            else now_utc_minus_5()
+        )
         record = CierreCajaDenominacion(
             caja_id=entity.caja_id,
             usuario_id=entity.usuario_id,
@@ -40,7 +45,11 @@ class CierreCajaDenominacionRepository(CierreCajaDenominacionRepositoryInterface
             return []
         records: list[CierreCajaDenominacion] = []
         for entity in entities:
-            fecha_conteo = entity.fecha_conteo or datetime.now(timezone.utc)
+            fecha_conteo = (
+                ensure_utc_minus_5(entity.fecha_conteo)
+                if entity.fecha_conteo
+                else now_utc_minus_5()
+            )
             records.append(
                 CierreCajaDenominacion(
                     caja_id=entity.caja_id,
@@ -78,7 +87,11 @@ class CierreCajaDenominacionRepository(CierreCajaDenominacionRepositoryInterface
         record.denominacion = entity.denominacion
         record.cantidad = entity.cantidad
         record.subtotal = entity.subtotal
-        record.fecha_conteo = entity.fecha_conteo or record.fecha_conteo
+        record.fecha_conteo = (
+            ensure_utc_minus_5(entity.fecha_conteo)
+            if entity.fecha_conteo
+            else record.fecha_conteo
+        )
         self.db.commit()
         self.db.refresh(record)
         return self._to_entity(record)

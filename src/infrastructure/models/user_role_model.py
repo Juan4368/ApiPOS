@@ -1,5 +1,6 @@
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, UniqueConstraint
-from sqlalchemy.sql import func
+
+from utils.timezone import now_utc_minus_5
 
 from src.infrastructure.models.base import Base
 
@@ -11,4 +12,4 @@ class UserRoleModel(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
     role_id = Column(Integer, ForeignKey("roles.id", ondelete="CASCADE"), nullable=False)
-    created_at = Column(DateTime, server_default=func.now(), nullable=False)
+    created_at = Column(DateTime, default=now_utc_minus_5, nullable=False)

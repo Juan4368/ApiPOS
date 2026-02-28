@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from domain.entities.carteraEntity import CarteraEntity
 from domain.interfaces.cartera_repository_interface import CarteraRepositoryInterface
 from src.infrastructure.models.models import Cartera
+from utils.timezone import end_of_day, ensure_utc_minus_5, start_of_day
 
 
 class CarteraRepository(CarteraRepositoryInterface):
@@ -17,7 +18,7 @@ class CarteraRepository(CarteraRepositoryInterface):
     def create_cartera(self, entity: CarteraEntity) -> CarteraEntity:
         cartera_orm = Cartera(
             monto=entity.monto,
-            fecha=entity.fecha,
+            fecha=ensure_utc_minus_5(entity.fecha),
             categoria_contabilidad_id=entity.categoria_contabilidad_id,
             cliente=entity.cliente,
             notas=entity.notas,
@@ -38,9 +39,9 @@ class CarteraRepository(CarteraRepositoryInterface):
     ) -> List[CarteraEntity]:
         query = self.db.query(Cartera)
         if desde:
-            query = query.filter(Cartera.fecha >= datetime.combine(desde, time.min))
+            query = query.filter(Cartera.fecha >= start_of_day(desde))
         if hasta:
-            query = query.filter(Cartera.fecha <= datetime.combine(hasta, time.max))
+            query = query.filter(Cartera.fecha <= end_of_day(hasta))
         records = query.order_by(Cartera.fecha.desc()).all()
         return [self._to_entity(record) for record in records]
 
@@ -49,7 +50,7 @@ class CarteraRepository(CarteraRepositoryInterface):
         if not record:
             return None
         record.monto = entity.monto
-        record.fecha = entity.fecha
+        record.fecha = ensure_utc_minus_5(entity.fecha)
         record.categoria_contabilidad_id = entity.categoria_contabilidad_id
         record.cliente = entity.cliente
         record.notas = entity.notas

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import List, Optional
 from uuid import UUID
 
@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from domain.entities.visitaEntity import VisitaEntity
 from domain.interfaces.visita_repository_interface import VisitaRepositoryInterface
 from src.infrastructure.models.models import Visita
+from utils.timezone import ensure_utc_minus_5, now_utc_minus_5
 
 
 class VisitaRepository(VisitaRepositoryInterface):
@@ -16,9 +17,9 @@ class VisitaRepository(VisitaRepositoryInterface):
         self.db = db
 
     def create_visita(self, entity: VisitaEntity) -> VisitaEntity:
-        now = datetime.now(timezone.utc)
-        fecha = entity.fecha or now
-        created_at = entity.created_at or now
+        now = now_utc_minus_5()
+        fecha = ensure_utc_minus_5(entity.fecha) if entity.fecha else now
+        created_at = ensure_utc_minus_5(entity.created_at) if entity.created_at else now
         record = Visita(
             cliente_id=entity.cliente_id,
             usuario_id=entity.usuario_id,
@@ -59,7 +60,9 @@ class VisitaRepository(VisitaRepositoryInterface):
             return None
         record.cliente_id = entity.cliente_id
         record.usuario_id = entity.usuario_id
-        record.fecha = entity.fecha or record.fecha
+        record.fecha = (
+            ensure_utc_minus_5(entity.fecha) if entity.fecha else record.fecha
+        )
         record.motivo = entity.motivo
         self.db.commit()
         self.db.refresh(record)

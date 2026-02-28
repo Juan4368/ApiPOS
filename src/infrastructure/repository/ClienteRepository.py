@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import List, Optional
 from uuid import UUID
 
@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from domain.entities.clienteEntity import ClienteEntity
 from domain.interfaces.cliente_repository_interface import ClienteRepositoryInterface
 from src.infrastructure.models.models import Cliente
+from utils.timezone import ensure_utc_minus_5, now_utc_minus_5
 
 
 class ClienteRepository(ClienteRepositoryInterface):
@@ -26,7 +27,11 @@ class ClienteRepository(ClienteRepositoryInterface):
             or entity.nombre_normalizado
             or (entity.nombre or "").strip().lower()
         )
-        created_at = entity.created_at or datetime.now(timezone.utc)
+        created_at = (
+            ensure_utc_minus_5(entity.created_at)
+            if entity.created_at
+            else now_utc_minus_5()
+        )
         cliente_orm = Cliente(
             id=entity.id,
             nombre=entity.nombre,

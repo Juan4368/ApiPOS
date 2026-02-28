@@ -9,6 +9,7 @@ from domain.entities.ingresoEntity import IngresoEntity
 from domain.enums.contabilidadEnums import MedioPago
 from domain.interfaces.ingreso_repository_interface import IngresoRepositoryInterface
 from src.infrastructure.models.models import Ingreso
+from utils.timezone import end_of_day, ensure_utc_minus_5, start_of_day
 
 
 class IngresoRepository(IngresoRepositoryInterface):
@@ -18,7 +19,7 @@ class IngresoRepository(IngresoRepositoryInterface):
     def create_ingreso(self, entity: IngresoEntity) -> IngresoEntity:
         ingreso_orm = Ingreso(
             monto=entity.monto,
-            fecha=entity.fecha,
+            fecha=ensure_utc_minus_5(entity.fecha),
             tipo_ingreso=self._to_tipo_ingreso(entity.tipo_ingreso),
             categoria_contabilidad_id=entity.categoria_contabilidad_id,
             notas=entity.notas,
@@ -40,9 +41,9 @@ class IngresoRepository(IngresoRepositoryInterface):
     ) -> List[IngresoEntity]:
         query = self.db.query(Ingreso)
         if desde:
-            query = query.filter(Ingreso.fecha >= datetime.combine(desde, time.min))
+            query = query.filter(Ingreso.fecha >= start_of_day(desde))
         if hasta:
-            query = query.filter(Ingreso.fecha <= datetime.combine(hasta, time.max))
+            query = query.filter(Ingreso.fecha <= end_of_day(hasta))
         records = query.order_by(Ingreso.fecha.desc()).all()
         return [self._to_entity(record) for record in records]
 
@@ -51,7 +52,7 @@ class IngresoRepository(IngresoRepositoryInterface):
         if not record:
             return None
         record.monto = entity.monto
-        record.fecha = entity.fecha
+        record.fecha = ensure_utc_minus_5(entity.fecha)
         record.tipo_ingreso = self._to_tipo_ingreso(entity.tipo_ingreso)
         record.categoria_contabilidad_id = entity.categoria_contabilidad_id
         record.notas = entity.notas

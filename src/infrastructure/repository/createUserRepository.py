@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import List, Optional
 
 from sqlalchemy import or_
@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from domain.entities.userEntity import UserEntity
 from domain.interfaces.user_repository_interface import UserRepositoryInterface
 from src.infrastructure.models.models import User
+from utils.timezone import ensure_utc_minus_5, now_utc_minus_5
 
 
 class UserRepository(UserRepositoryInterface):
@@ -18,8 +19,16 @@ class UserRepository(UserRepositoryInterface):
         self.db = db
 
     def create_user(self, user_entity: UserEntity) -> UserEntity:
-        created_at = user_entity.created_at or datetime.now(timezone.utc)
-        updated_at = user_entity.updated_at or created_at
+        created_at = (
+            ensure_utc_minus_5(user_entity.created_at)
+            if user_entity.created_at
+            else now_utc_minus_5()
+        )
+        updated_at = (
+            ensure_utc_minus_5(user_entity.updated_at)
+            if user_entity.updated_at
+            else created_at
+        )
         user_orm = User(
             user_id=user_entity.user_id,
             username=user_entity.username,
@@ -28,7 +37,11 @@ class UserRepository(UserRepositoryInterface):
             telephone_number=user_entity.telephone_number,
             is_active=user_entity.is_active,
             is_verified=user_entity.is_verified,
-            last_login_at=user_entity.last_login_at,
+            last_login_at=(
+                ensure_utc_minus_5(user_entity.last_login_at)
+                if user_entity.last_login_at
+                else None
+            ),
             created_at=created_at,
             updated_at=updated_at,
         )
@@ -73,7 +86,9 @@ class UserRepository(UserRepositoryInterface):
         if not record:
             return None
         record.is_active = is_active
-        record.updated_at = updated_at or datetime.now(timezone.utc)
+        record.updated_at = (
+            ensure_utc_minus_5(updated_at) if updated_at else now_utc_minus_5()
+        )
         self.db.commit()
         self.db.refresh(record)
         return UserEntity.from_model(record)
@@ -107,9 +122,11 @@ class UserRepository(UserRepositoryInterface):
         if is_verified is not None:
             record.is_verified = is_verified
         if last_login_at is not None:
-            record.last_login_at = last_login_at
+            record.last_login_at = ensure_utc_minus_5(last_login_at)
 
-        record.updated_at = updated_at or datetime.now(timezone.utc)
+        record.updated_at = (
+            ensure_utc_minus_5(updated_at) if updated_at else now_utc_minus_5()
+        )
         self.db.commit()
         self.db.refresh(record)
         return UserEntity.from_model(record)
