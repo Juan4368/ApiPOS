@@ -122,7 +122,9 @@ class VentaRepository(VentaRepositoryInterface):
         if hasta:
             query = query.filter(Venta.fecha <= datetime.combine(hasta, time.max))
         records = query.order_by(Venta.fecha.desc()).all()
-        return [VentaResumenResponse.model_validate(row._mapping) for row in records]
+        return [
+            VentaResumenResponse.model_validate(dict(row._mapping)) for row in records
+        ]
 
     def get_stock_cantidades(self, producto_ids: list[int]) -> dict[int, int]:
         if not producto_ids:

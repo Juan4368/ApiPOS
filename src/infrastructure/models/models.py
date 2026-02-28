@@ -286,7 +286,7 @@ class Venta(Base):
     impuesto: Mapped[decimal.Decimal] = mapped_column(Numeric(12, 2), nullable=False)
     descuento: Mapped[decimal.Decimal] = mapped_column(Numeric(12, 2), nullable=False)
     total: Mapped[decimal.Decimal] = mapped_column(Numeric(12, 2), nullable=False)
-    tipo_pago: Mapped[Optional[str]] = mapped_column(Enum('efectivo', 'tarjeta', 'transferencia', name='tipo_pago_enum'))
+    tipo_pago: Mapped[Optional[str]] = mapped_column(Enum('efectivo', 'tarjeta', 'transferencia','credito', name='tipo_pago_enum'))
     es_credito: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     estado: Mapped[bool] = mapped_column(Boolean, nullable=False)
     nota_venta: Mapped[Optional[str]] = mapped_column(String(255))

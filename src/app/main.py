@@ -72,8 +72,9 @@ def create_app() -> FastAPI:
 
     app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
-    allow_credentials=True,
+    allow_origins=["http://localhost:5173","http://192.168.1.9:5173",
+                   "https://tkdqn1k1-5173.use.devtunnels.ms"],
+          allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
