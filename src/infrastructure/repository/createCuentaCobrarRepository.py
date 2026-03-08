@@ -181,8 +181,16 @@ class CuentaCobrarRepository(CuentaCobrarRepositoryInterface):
             total=record.total,
             saldo=record.saldo,
             estado=CreditoEstado(record.estado),
-            created_at=record.created_at,
-            updated_at=record.updated_at,
+            created_at=(
+                ensure_utc_minus_5(record.created_at)
+                if record.created_at
+                else None
+            ),
+            updated_at=(
+                ensure_utc_minus_5(record.updated_at)
+                if record.updated_at
+                else None
+            ),
             cliente_nombre=record.cliente.nombre if record.cliente else None,
             numero_factura=record.venta.numero_factura if record.venta else None,
             venta_detalles=venta_detalles,
@@ -194,8 +202,12 @@ class CuentaCobrarRepository(CuentaCobrarRepositoryInterface):
             cuenta_id=record.cuenta_id,
             movimiento_id=record.movimiento_id,
             monto=record.monto,
-            fecha=record.fecha,
-            created_at=record.created_at,
+            fecha=ensure_utc_minus_5(record.fecha),
+            created_at=(
+                ensure_utc_minus_5(record.created_at)
+                if record.created_at
+                else None
+            ),
         )
 
     def _to_estado(self, estado: CreditoEstado) -> str:
