@@ -6,7 +6,9 @@ import time
 import webbrowser
 
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, Header, HTTPException, Request, status
+from fastapi.openapi.docs import get_swagger_ui_html
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -51,6 +53,7 @@ BROWSER_CANDIDATES = [
     "/usr/bin/google-chrome",
     "/usr/bin/chromium-browser",
 ]
+LOCALHOST_HOSTS = {"127.0.0.1", "::1", "localhost"}
 
 
 def load_environment() -> None:
@@ -61,13 +64,16 @@ def load_environment() -> None:
 def create_app() -> FastAPI:
     load_environment()
 
+    docs_mode = os.getenv("SWAGGER_MODE", "off").strip().lower()
+    docs_token = os.getenv("SWAGGER_TOKEN", "").strip()
+
     app = FastAPI(
         title="POS API",
         version="1.0.0",
         description="API para la gestion de pedidos",
-        docs_url="/docs",
+        docs_url=None,
         redoc_url=None,
-        openapi_url="/openapi.json",
+        openapi_url=None,
     )
 
     allowed_origins = [
@@ -109,6 +115,49 @@ def create_app() -> FastAPI:
     def root():
         return {"mensaje": "API POS en ejecucion"}
 
+    def assert_docs_access(
+        request: Request,
+        x_swagger_token: str | None = Header(default=None),
+    ) -> None:
+        if docs_mode == "local":
+            client_host = request.client.host if request.client else ""
+            if client_host not in LOCALHOST_HOSTS:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Swagger solo disponible localmente",
+                )
+            return
+
+        if docs_mode == "token":
+            if not docs_token or x_swagger_token != docs_token:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Token de Swagger invalido",
+                )
+            return
+
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No encontrado",
+        )
+
+    if docs_mode in {"local", "token"}:
+
+        @app.get("/openapi.json", include_in_schema=False)
+        async def openapi(request: Request, x_swagger_token: str | None = Header(default=None)):
+            assert_docs_access(request, x_swagger_token)
+            return JSONResponse(app.openapi())
+
+        @app.get("/docs", include_in_schema=False)
+        async def swagger_ui_html(
+            request: Request, x_swagger_token: str | None = Header(default=None)
+        ):
+            assert_docs_access(request, x_swagger_token)
+            return get_swagger_ui_html(
+                openapi_url="/openapi.json",
+                title=f"{app.title} - Swagger UI",
+            )
+
     return app
 
 
@@ -128,7 +177,8 @@ def open_docs_in_browser() -> None:
 
 
 def main() -> None:
-    threading.Thread(target=open_docs_in_browser, daemon=True).start()
+    if os.getenv("SWAGGER_MODE", "off").strip().lower() == "local":
+        threading.Thread(target=open_docs_in_browser, daemon=True).start()
 
     import uvicorn
 
