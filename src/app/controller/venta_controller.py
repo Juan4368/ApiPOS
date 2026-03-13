@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from src.config import get_db
 from src.domain.dtos.genericResponseDto import CreationResponse
 from src.domain.dtos.ventaDto import (
+    VentaAnulacionRequest,
     VentaRequest,
     VentaResponse,
     VentaDetallesUpdateRequest,
@@ -96,6 +97,24 @@ def update_venta_status(
     return venta
 
 
+@router.patch("/{venta_id}/anular", response_model=VentaResponse)
+def anular_venta(
+    venta_id: int,
+    payload: VentaAnulacionRequest,
+    service: ServiceDep,
+) -> VentaResponse:
+    try:
+        venta = service.anular_venta(venta_id, payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+    if not venta:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Venta no encontrada",
+        )
+    return venta
+
+
 @router.patch("/{venta_id}/detalles", response_model=VentaResponse)
 def update_venta_detalles(
     venta_id: int,
@@ -133,6 +152,24 @@ def update_venta(
     service: ServiceDep,
 ) -> VentaResponse:
     venta = service.update_venta(venta_id, payload)
+    if not venta:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Venta no encontrada",
+        )
+    return venta
+
+
+@router.patch("/{venta_id}", response_model=VentaResponse)
+def patch_venta(
+    venta_id: int,
+    payload: VentaUpdateRequest,
+    service: ServiceDep,
+) -> VentaResponse:
+    try:
+        venta = service.update_venta(venta_id, payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
     if not venta:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

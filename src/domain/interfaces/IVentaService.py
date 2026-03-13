@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from typing import List, Optional
 
 from domain.dtos.ventaDto import (
+    VentaAnulacionRequest,
     VentaRequest,
     VentaResponse,
     VentaDetallesUpdateRequest,
@@ -32,6 +33,12 @@ class IVentaService(ABC):
     @abstractmethod
     def update_venta_status(
         self, venta_id: int, data: VentaStatusRequest
+    ) -> Optional[VentaResponse]:
+        ...
+
+    @abstractmethod
+    def anular_venta(
+        self, venta_id: int, data: VentaAnulacionRequest
     ) -> Optional[VentaResponse]:
         ...
 

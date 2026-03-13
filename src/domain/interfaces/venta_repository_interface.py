@@ -58,6 +58,17 @@ class VentaRepositoryInterface(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def anular_venta(
+        self,
+        venta_id: int,
+        *,
+        motivo: Optional[str] = None,
+        stock_deltas: Optional[dict[int, int]] = None,
+    ) -> Optional[VentaEntity]:
+        """Anula logicamente una venta y aplica efectos relacionados."""
+        raise NotImplementedError
+
+    @abstractmethod
     def update_venta(
         self,
         venta_entity: VentaEntity,

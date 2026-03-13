@@ -75,6 +75,7 @@ class VentaResumenResponse(BaseModel):
     subtotal: Decimal
     descuento: Decimal
     total: Decimal
+    estado: bool
     tipo_pago: Optional[str] = None
     es_credito: bool = False
     nota_venta: Optional[str]
@@ -87,6 +88,14 @@ class VentaStatusRequest(BaseModel):
     """
 
     estado: bool
+
+
+class VentaAnulacionRequest(BaseModel):
+    """
+    DTO para anular logicamente una venta.
+    """
+
+    motivo: Optional[str] = Field(default=None, max_length=255)
 
 
 class VentaUpdateRequest(BaseModel):

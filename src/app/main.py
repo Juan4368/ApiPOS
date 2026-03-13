@@ -57,8 +57,15 @@ LOCALHOST_HOSTS = {"127.0.0.1", "::1", "localhost"}
 
 
 def load_environment() -> None:
-    env_path = Path(__file__).resolve().parent / ".env"
-    load_dotenv(env_path)
+    env_candidates = [
+        PROJECT_ROOT / ".env",
+        Path(__file__).resolve().parent / ".env",
+    ]
+
+    for env_path in env_candidates:
+        if env_path.exists():
+            load_dotenv(env_path)
+            break
 
 
 def create_app() -> FastAPI:

@@ -6,6 +6,7 @@ from datetime import date
 from typing import List, Optional
 
 from domain.dtos.ventaDto import (
+    VentaAnulacionRequest,
     VentaRequest,
     VentaResponse,
     VentaDetallesUpdateRequest,
@@ -147,6 +148,31 @@ class VentaService(IVentaService):
         self, venta_id: int, data: VentaStatusRequest
     ) -> Optional[VentaResponse]:
         updated = self.repository.update_venta_status(venta_id, data.estado)
+        if not updated:
+            return None
+        return VentaResponse.model_validate(updated)
+
+    def anular_venta(
+        self, venta_id: int, data: VentaAnulacionRequest
+    ) -> Optional[VentaResponse]:
+        current = self.repository.get_venta(venta_id)
+        if not current:
+            return None
+        if not current.estado:
+            raise ValueError("La venta ya se encuentra anulada")
+
+        stock_deltas: dict[int, int] = {}
+        for detalle in current.detalles or []:
+            stock_deltas[detalle.producto_id] = (
+                stock_deltas.get(detalle.producto_id, 0) + detalle.cantidad
+            )
+        self._validate_stock_deltas(stock_deltas)
+
+        updated = self.repository.anular_venta(
+            venta_id,
+            motivo=data.motivo,
+            stock_deltas=stock_deltas,
+        )
         if not updated:
             return None
         return VentaResponse.model_validate(updated)
