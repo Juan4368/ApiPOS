@@ -74,7 +74,7 @@ class VentaRepository(VentaRepositoryInterface):
         if detalle_orms:
             self.db.add_all(detalle_orms)
 
-        if venta_entity.es_credito:
+        if venta_entity.es_credito and venta_entity.estado:
             existing = (
                 self.db.query(CuentaCobrar)
                 .filter(CuentaCobrar.venta_id == venta_orm.venta_id)
@@ -279,7 +279,7 @@ class VentaRepository(VentaRepositoryInterface):
         record.user_id = venta_entity.user_id
 
         tipo_pago = (record.tipo_pago or "").strip().lower()
-        should_be_credito = bool(record.es_credito) or tipo_pago == "credito"
+        should_be_credito = (bool(record.es_credito) or tipo_pago == "credito") and bool(record.estado)
         if should_be_credito:
             cuentas_activas = (
                 self.db.query(CuentaCobrar)
