@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+import subprocess
 import sys
 import threading
 import time
@@ -45,7 +46,8 @@ from src.app.controller.user_controller import router as user_router
 from src.app.controller.venta_controller import router as venta_router
 from src.app.controller.visita_controller import router as visita_router
 
-DOCS_URL = "http://127.0.0.1:8000/docs"
+DEFAULT_PORT = 8000
+DOCS_URL = f"http://127.0.0.1:{DEFAULT_PORT}/docs"
 BROWSER_CANDIDATES = [
     "C://Program Files//Google//Chrome//Application//chrome.exe",
     "C://Program Files (x86)//Google//Chrome//Application//chrome.exe",
@@ -122,6 +124,41 @@ def create_app() -> FastAPI:
     def root():
         return {"mensaje": "API POS en ejecucion"}
 
+    @app.post("/open-cash-drawer")
+    def open_cash_drawer():
+        command = os.getenv("OPEN_CASH_DRAWER_COMMAND", "").strip()
+        if not command:
+            raise HTTPException(
+                status_code=status.HTTP_501_NOT_IMPLEMENTED,
+                detail=(
+                    "Configura OPEN_CASH_DRAWER_COMMAND con el comando "
+                    "que abre el cajon en este equipo."
+                ),
+            )
+
+        try:
+            subprocess.run(
+                command,
+                shell=True,
+                check=True,
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
+        except subprocess.TimeoutExpired as exc:
+            raise HTTPException(
+                status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+                detail="Tiempo de espera agotado al abrir el cajon.",
+            ) from exc
+        except subprocess.CalledProcessError as exc:
+            stderr = (exc.stderr or "").strip()
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"No se pudo abrir el cajon. {stderr or 'Error en comando del sistema.'}",
+            ) from exc
+
+        return {"ok": True, "mensaje": "Comando de apertura ejecutado."}
+
     def assert_docs_access(
         request: Request,
         x_swagger_token: str | None = Header(default=None),
@@ -189,10 +226,12 @@ def main() -> None:
 
     import uvicorn
 
+    port = int(os.getenv("PORT", str(DEFAULT_PORT)))
+
     uvicorn.run(
         "src.app.main:app",
         host="0.0.0.0",
-        port=8000,
+        port=port,
         reload=True,
     )
 
