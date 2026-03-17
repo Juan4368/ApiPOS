@@ -599,6 +599,7 @@ class CuentaCobrar(Base):
     cliente_id: Mapped[Optional[uuid.UUID]] = mapped_column(Uuid)
     total: Mapped[decimal.Decimal] = mapped_column(Numeric(14, 2), nullable=False)
     saldo: Mapped[decimal.Decimal] = mapped_column(Numeric(14, 2), nullable=False)
+    fecha_vencimiento: Mapped[Optional[datetime.date]] = mapped_column()
     estado: Mapped[str] = mapped_column(Enum('PENDIENTE', 'PARCIAL', 'PAGADO', 'ANULADO', name='credito_estado_enum'), nullable=False)
     created_at: Mapped[datetime.datetime] = mapped_column(DateTime(True), nullable=False, default=now_utc_minus_5)
     updated_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))

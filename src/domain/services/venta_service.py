@@ -323,3 +323,6 @@ class VentaService(IVentaService):
         return self.update_venta_detalles(
             venta_id, VentaDetallesUpdateRequest(detalles=detalles_request)
         )
+
+    def delete_venta(self, venta_id: int) -> bool:
+        return self.repository.delete_venta(venta_id)

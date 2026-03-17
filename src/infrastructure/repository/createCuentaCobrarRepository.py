@@ -33,6 +33,7 @@ class CuentaCobrarRepository(CuentaCobrarRepositoryInterface):
             cliente_id=entity.cliente_id,
             total=entity.total,
             saldo=entity.saldo,
+            fecha_vencimiento=entity.fecha_vencimiento,
             estado=self._to_estado(entity.estado),
             created_at=created_at,
         )
@@ -90,6 +91,7 @@ class CuentaCobrarRepository(CuentaCobrarRepositoryInterface):
         record.cliente_id = entity.cliente_id
         record.total = entity.total
         record.saldo = entity.saldo
+        record.fecha_vencimiento = entity.fecha_vencimiento
         record.estado = self._to_estado(entity.estado)
         record.updated_at = (
             ensure_utc_minus_5(entity.updated_at)
@@ -180,6 +182,7 @@ class CuentaCobrarRepository(CuentaCobrarRepositoryInterface):
             cliente_id=record.cliente_id,
             total=record.total,
             saldo=record.saldo,
+            fecha_vencimiento=record.fecha_vencimiento,
             estado=CreditoEstado(record.estado),
             created_at=(
                 ensure_utc_minus_5(record.created_at)

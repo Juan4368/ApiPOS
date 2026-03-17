@@ -77,3 +77,8 @@ class VentaRepositoryInterface(ABC):
     ) -> Optional[VentaEntity]:
         """Actualiza una venta y, si aplica, sus detalles."""
         raise NotImplementedError
+
+    @abstractmethod
+    def delete_venta(self, venta_id: int) -> bool:
+        """Elimina fisicamente una venta por ID."""
+        raise NotImplementedError

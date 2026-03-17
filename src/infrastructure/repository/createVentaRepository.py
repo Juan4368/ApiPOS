@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import calendar
 from datetime import date, datetime, time
 from decimal import Decimal
 from typing import List, Optional
@@ -12,6 +13,7 @@ from domain.entities.ventaEntity import VentaEntity
 from domain.dtos.ventaDto import VentaResumenResponse
 from domain.interfaces.venta_repository_interface import VentaRepositoryInterface
 from src.infrastructure.models.models import (
+    AbonoCuenta,
     Cliente,
     CuentaCobrar,
     MovimientoFinanciero,
@@ -86,6 +88,7 @@ class VentaRepository(VentaRepositoryInterface):
                     cliente_id=venta_orm.cliente_id,
                     total=venta_orm.total,
                     saldo=venta_orm.total,
+                    fecha_vencimiento=self._fecha_vencimiento_credito(),
                     estado="PENDIENTE",
                 )
                 self.db.add(cuenta)
@@ -295,6 +298,7 @@ class VentaRepository(VentaRepositoryInterface):
                     cliente_id=record.cliente_id,
                     total=record.total,
                     saldo=record.total,
+                    fecha_vencimiento=self._fecha_vencimiento_credito(),
                     estado="PENDIENTE",
                 )
                 self.db.add(cuenta)
@@ -342,6 +346,44 @@ class VentaRepository(VentaRepositoryInterface):
             record.detalles = detalle_orms
         return VentaEntity.from_model(record)
 
+    def delete_venta(self, venta_id: int) -> bool:
+        record = self.db.get(Venta, venta_id)
+        if not record:
+            return False
+        try:
+            cuentas = (
+                self.db.query(CuentaCobrar)
+                .filter(CuentaCobrar.venta_id == venta_id)
+                .all()
+            )
+            cuenta_ids = [cuenta.id for cuenta in cuentas]
+            if cuenta_ids:
+                self.db.query(AbonoCuenta).filter(
+                    AbonoCuenta.cuenta_id.in_(cuenta_ids)
+                ).delete(synchronize_session=False)
+
+            self.db.query(CuentaCobrar).filter(
+                CuentaCobrar.venta_id == venta_id
+            ).delete(synchronize_session=False)
+
+            self.db.query(MovimientoFinanciero).filter(
+                MovimientoFinanciero.venta_id == venta_id
+            ).update(
+                {MovimientoFinanciero.venta_id: None},
+                synchronize_session=False,
+            )
+
+            self.db.query(VentaDetalle).filter(
+                VentaDetalle.venta_id == venta_id
+            ).delete(synchronize_session=False)
+
+            self.db.delete(record)
+            self.db.commit()
+            return True
+        except Exception as exc:
+            self.db.rollback()
+            raise ValueError(f"No fue posible eliminar la venta {venta_id}: {exc}") from exc
+
     def _apply_stock_deltas(self, deltas: dict[int, int]) -> None:
         # Deshabilitado temporalmente: no validar ni ajustar stock.
         return
@@ -367,3 +409,10 @@ class VentaRepository(VentaRepositoryInterface):
                 )
             record.cantidad_actual = nueva_cantidad
             record.ultima_actualizacion = now
+
+    def _fecha_vencimiento_credito(self) -> date:
+        hoy = now_utc_minus_5().date()
+        year = hoy.year + (hoy.month // 12)
+        month = 1 if hoy.month == 12 else hoy.month + 1
+        last_day = calendar.monthrange(year, month)[1]
+        return hoy.replace(year=year, month=month, day=min(hoy.day, last_day))

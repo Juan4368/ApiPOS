@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from datetime import datetime
+import calendar
+from datetime import date
 from decimal import Decimal
 from typing import List, Optional
 from uuid import UUID
@@ -29,11 +30,17 @@ class CuentaCobrarService:
         if saldo > data.total:
             raise ValueError("El saldo inicial no puede ser mayor al total")
         estado = data.estado or self._calcular_estado(data.total, saldo)
+        fecha_vencimiento = (
+            data.fecha_vencimiento
+            if data.fecha_vencimiento is not None
+            else self._sumar_un_mes(now_utc_minus_5().date())
+        )
         entity = CuentaCobrarEntity(
             venta_id=data.venta_id,
             cliente_id=data.cliente_id,
             total=data.total,
             saldo=saldo,
+            fecha_vencimiento=fecha_vencimiento,
             estado=estado,
             created_at=now_utc_minus_5(),
         )
@@ -71,6 +78,7 @@ class CuentaCobrarService:
             cliente_id=data.cliente_id,
             total=data.total,
             saldo=saldo,
+            fecha_vencimiento=data.fecha_vencimiento,
             estado=estado,
             updated_at=now_utc_minus_5(),
         )
@@ -98,6 +106,11 @@ class CuentaCobrarService:
             ),
             total=total,
             saldo=saldo,
+            fecha_vencimiento=(
+                data.fecha_vencimiento
+                if data.fecha_vencimiento is not None
+                else current.fecha_vencimiento
+            ),
             estado=estado,
             created_at=current.created_at,
             updated_at=now_utc_minus_5(),
@@ -135,3 +148,9 @@ class CuentaCobrarService:
         if saldo < total:
             return CreditoEstado.PARCIAL
         return CreditoEstado.PENDIENTE
+
+    def _sumar_un_mes(self, value: date) -> date:
+        year = value.year + (value.month // 12)
+        month = 1 if value.month == 12 else value.month + 1
+        last_day = calendar.monthrange(year, month)[1]
+        return value.replace(year=year, month=month, day=min(value.day, last_day))

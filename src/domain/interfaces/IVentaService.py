@@ -59,3 +59,7 @@ class IVentaService(ABC):
         self, venta_id: int, producto_id: int
     ) -> Optional[VentaResponse]:
         ...
+
+    @abstractmethod
+    def delete_venta(self, venta_id: int) -> bool:
+        ...

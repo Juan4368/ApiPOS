@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 from typing import Optional
 from uuid import UUID
@@ -17,6 +17,7 @@ class CuentaCobrarRequest(BaseModel):
     cliente_id: Optional[UUID] = None
     total: Decimal = Field(..., ge=Decimal("0.00"))
     saldo_inicial: Optional[Decimal] = Field(default=None, ge=Decimal("0.00"))
+    fecha_vencimiento: Optional[date] = None
     estado: Optional[CreditoEstado] = None
 
 
@@ -26,6 +27,7 @@ class CuentaCobrarResponse(BaseModel):
     cliente_id: Optional[UUID] = None
     total: Decimal
     saldo: Decimal
+    fecha_vencimiento: Optional[date] = None
     estado: CreditoEstado
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
@@ -41,6 +43,7 @@ class CuentaCobrarUpdateRequest(BaseModel):
     cliente_id: Optional[UUID] = None
     total: Optional[Decimal] = Field(default=None, ge=Decimal("0.00"))
     saldo: Optional[Decimal] = Field(default=None, ge=Decimal("0.00"))
+    fecha_vencimiento: Optional[date] = None
     estado: Optional[CreditoEstado] = None
 
 
