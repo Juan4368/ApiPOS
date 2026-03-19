@@ -1,6 +1,5 @@
 from pathlib import Path
 import os
-import subprocess
 import sys
 import threading
 import time
@@ -56,6 +55,13 @@ BROWSER_CANDIDATES = [
     "/usr/bin/chromium-browser",
 ]
 LOCALHOST_HOSTS = {"127.0.0.1", "::1", "localhost"}
+
+
+def env_bool(name: str, default: bool = False) -> bool:
+    raw_value = os.getenv(name)
+    if raw_value is None:
+        return default
+    return raw_value.strip().lower() in {"1", "true", "t", "yes", "y", "on"}
 
 
 def load_environment() -> None:
@@ -124,41 +130,6 @@ def create_app() -> FastAPI:
     def root():
         return {"mensaje": "API POS en ejecucion"}
 
-    @app.post("/open-cash-drawer")
-    def open_cash_drawer():
-        command = os.getenv("OPEN_CASH_DRAWER_COMMAND", "").strip()
-        if not command:
-            raise HTTPException(
-                status_code=status.HTTP_501_NOT_IMPLEMENTED,
-                detail=(
-                    "Configura OPEN_CASH_DRAWER_COMMAND con el comando "
-                    "que abre el cajon en este equipo."
-                ),
-            )
-
-        try:
-            subprocess.run(
-                command,
-                shell=True,
-                check=True,
-                capture_output=True,
-                text=True,
-                timeout=10,
-            )
-        except subprocess.TimeoutExpired as exc:
-            raise HTTPException(
-                status_code=status.HTTP_504_GATEWAY_TIMEOUT,
-                detail="Tiempo de espera agotado al abrir el cajon.",
-            ) from exc
-        except subprocess.CalledProcessError as exc:
-            stderr = (exc.stderr or "").strip()
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"No se pudo abrir el cajon. {stderr or 'Error en comando del sistema.'}",
-            ) from exc
-
-        return {"ok": True, "mensaje": "Comando de apertura ejecutado."}
-
     def assert_docs_access(
         request: Request,
         x_swagger_token: str | None = Header(default=None),
@@ -221,18 +192,20 @@ def open_docs_in_browser() -> None:
 
 
 def main() -> None:
-    if os.getenv("SWAGGER_MODE", "off").strip().lower() == "local":
+    docs_mode = os.getenv("SWAGGER_MODE", "off").strip().lower()
+    if docs_mode == "local":
         threading.Thread(target=open_docs_in_browser, daemon=True).start()
 
     import uvicorn
 
     port = int(os.getenv("PORT", str(DEFAULT_PORT)))
+    reload_enabled = env_bool("UVICORN_RELOAD", default=(docs_mode == "local"))
 
     uvicorn.run(
         "src.app.main:app",
         host="0.0.0.0",
         port=port,
-        reload=True,
+        reload=reload_enabled,
     )
 
 
